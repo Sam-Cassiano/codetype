@@ -1,0 +1,8 @@
+node_modules/
+build/
+dist/
+data/
+*.log
+
+# permissoes locais da ferramenta (a launch.json do projeto continua versionada)
+.claude/settings.local.json

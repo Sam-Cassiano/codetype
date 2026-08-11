@@ -1,0 +1,3 @@
+# mantem LF no repositorio, independente do sistema de quem clona
+* text=auto eol=lf
+*.exe binary

@@ -200,6 +200,36 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
+    // "Publicar": grava o modulo dentro de public/curriculum/gerados.json.
+    // Esse arquivo e servido como estatico, entao viaja no deploy (Vercel) e
+    // aparece em qualquer aparelho, sem depender de localStorage nem de API.
+    if (url === '/api/publish' && req.method === 'POST') {
+      if (EMPACOTADO) {
+        return json(res, 501, {
+          error: 'somente_no_codigo_fonte',
+          hint: 'Publicar grava dentro de public/curriculum/. Rode com "node server.js" no projeto para usar isso.'
+        });
+      }
+      const mod = JSON.parse(await readBody(req));
+      if (!mod || !mod.id) return json(res, 400, { error: 'modulo invalido' });
+
+      const arquivo = path.join(PUBLIC_DIR, 'curriculum', 'gerados.json');
+      const atual = lerJSON(arquivo, []);
+      const lista = atual.filter((m) => m.id !== mod.id);
+      lista.push({ ...mod, publicado: true });
+      fs.writeFileSync(arquivo, JSON.stringify(lista, null, 2), 'utf8');
+      return json(res, 200, { ok: true, arquivo: path.relative(__dirname, arquivo), modulos: lista.length });
+    }
+
+    if (url === '/api/publish' && req.method === 'DELETE') {
+      if (EMPACOTADO) return json(res, 501, { error: 'somente_no_codigo_fonte' });
+      const id = new URL(req.url, 'http://x').searchParams.get('id');
+      const arquivo = path.join(PUBLIC_DIR, 'curriculum', 'gerados.json');
+      const lista = lerJSON(arquivo, []).filter((m) => m.id !== id);
+      fs.writeFileSync(arquivo, JSON.stringify(lista, null, 2), 'utf8');
+      return json(res, 200, { ok: true, modulos: lista.length });
+    }
+
     if (url === '/api/extensions') {
       if (req.method === 'GET') return json(res, 200, loadExtensoes());
 

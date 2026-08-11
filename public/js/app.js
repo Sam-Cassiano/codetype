@@ -34,6 +34,24 @@ function statusLicao(modulo, ui, li) {
   return 'bloqueada';
 }
 
+/**
+ * Simbolos que a barra de toque oferece: os proprios caracteres nao
+ * alfanumericos do trecho, ordenados por frequencia. Assim a barra e sempre
+ * relevante para a licao aberta — em celular, sao justamente os que o teclado
+ * virtual esconde em outra camada.
+ */
+function simbolosDe(codigo, limite = 14) {
+  const contagem = new Map();
+  for (const ch of String(codigo)) {
+    if (/[A-Za-z0-9\s]/.test(ch)) continue;
+    contagem.set(ch, (contagem.get(ch) || 0) + 1);
+  }
+  return [...contagem.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limite)
+    .map(([ch]) => ch);
+}
+
 function estrelas(p, licao) {
   if (!p || !p.passou) return 0;
   if (p.melhorAcc >= 0.999 && p.melhorWpm >= 30) return 3;
@@ -107,10 +125,47 @@ function viewHome() {
     <section class="bloco-lab">
       <div>
         <h3>Faltou alguma linguagem?</h3>
-        <p>Gere um modulo novo com os modelos que ja rodam na sua maquina via Ollama.</p>
+        <p>Gere um modulo novo com os modelos que ja rodam na sua maquina via Ollama — ou importe um modulo que voce ja gerou em outro aparelho.</p>
       </div>
-      <a class="btn primario" href="#/lab">Abrir gerador</a>
-    </section>`;
+      <div class="acoes-modulo">
+        <button class="btn" id="btn-importar-modulo">Importar modulo</button>
+        <input type="file" id="arquivo-modulo" accept="application/json,.json" hidden />
+        <a class="btn primario" href="#/lab">Abrir gerador</a>
+      </div>
+    </section>
+    <p class="dica" id="aviso-home"></p>`;
+
+  const arquivo = document.getElementById('arquivo-modulo');
+  document.getElementById('btn-importar-modulo').onclick = () => arquivo.click();
+  arquivo.onchange = async () => {
+    const f = arquivo.files && arquivo.files[0];
+    if (!f) return;
+    try {
+      const modulo = JSON.parse(await f.text());
+      if (!modulo || !modulo.id || !Array.isArray(modulo.units)) {
+        throw new Error('esse arquivo nao e um modulo do CodeType');
+      }
+      store.adicionarModulo({ ...modulo, gerado: true });
+      await fetch('/api/modules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modulo)
+      }).catch(() => {});
+      MODULOS = await carregarModulos();
+      location.hash = '#/modulo/' + modulo.id;
+    } catch (err) {
+      document.getElementById('aviso-home').textContent = 'Falhou: ' + err.message;
+    }
+  };
+}
+
+function baixarJSON(nome, texto) {
+  const url = URL.createObjectURL(new Blob([texto], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ------------------------------- MAPA DO MODULO --------------------------- */
@@ -172,10 +227,51 @@ function viewModulo(id) {
       </div>
       <div class="acoes-modulo">
         <a class="btn" href="#/lab/${esc(modulo.id)}">Acrescentar unidade com IA</a>
+        ${modulo.gerado ? `<button class="btn" data-exportar="${esc(modulo.id)}">Exportar .json</button>` : ''}
+        ${
+          modulo.gerado && !modulo.publicado
+            ? `<button class="btn" data-publicar="${esc(modulo.id)}" title="Grava em public/curriculum/gerados.json para o modulo viajar no deploy">Publicar no app</button>`
+            : ''
+        }
+        ${modulo.publicado ? '<span class="pill publicado">publicado no app</span>' : ''}
         ${modulo.gerado ? `<button class="btn perigo" data-excluir="${esc(modulo.id)}">Excluir modulo</button>` : ''}
       </div>
+      <p class="dica" id="aviso-modulo"></p>
     </div>
     ${unidades}`;
+
+  const avisoModulo = document.getElementById('aviso-modulo');
+
+  const btnExportar = app.querySelector('[data-exportar]');
+  if (btnExportar) {
+    btnExportar.onclick = () => {
+      baixarJSON(`${modulo.id}.json`, JSON.stringify(modulo, null, 2));
+      avisoModulo.textContent = 'Modulo baixado. Da para importar em outro aparelho pela tela de Modulos.';
+    };
+  }
+
+  const btnPublicar = app.querySelector('[data-publicar]');
+  if (btnPublicar) {
+    btnPublicar.onclick = async () => {
+      btnPublicar.disabled = true;
+      try {
+        const res = await fetch('/api/publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...modulo, units: modulo.units.filter((u) => !u.extensao) })
+        });
+        const dados = await res.json();
+        if (!res.ok) throw new Error(dados.hint || dados.error || 'falhou');
+        MODULOS = await carregarModulos();
+        viewModulo(modulo.id);
+        document.getElementById('aviso-modulo').textContent =
+          `Gravado em ${dados.arquivo}. Faca commit desse arquivo e o modulo aparece no celular e na versao publicada.`;
+      } catch (err) {
+        avisoModulo.textContent = 'Nao deu para publicar: ' + err.message;
+        btnPublicar.disabled = false;
+      }
+    };
+  }
 
   app.querySelectorAll('[data-remover-unidade]').forEach((btn) => {
     btn.onclick = async () => {
@@ -266,6 +362,15 @@ function viewLicao(moduloId, licaoId) {
       <div class="editor ${ehDesafio ? 'coberto' : ''}" id="editor" tabindex="0"></div>
       ${ehDesafio ? '<button class="btn fantasma revelar" id="btn-revelar">Revelar a solucao para digitar</button>' : ''}
 
+      <div class="teclas-rapidas" id="teclas-rapidas">
+        <button class="tecla-toque" data-foco="1">Tocar para digitar</button>
+        ${simbolosDe(licao.code)
+          .map((sim) => `<button class="tecla" data-ch="${esc(sim)}">${esc(sim)}</button>`)
+          .join('')}
+        <button class="tecla larga" data-ch="\\n">&#9166;</button>
+        <button class="tecla larga" data-apagar="1">&#9003;</button>
+      </div>
+
       <footer class="licao-rodape-acoes">
         <button class="btn fantasma" id="btn-reiniciar">Reiniciar (Esc)</button>
         <span class="dica">A indentacao do inicio da linha e preenchida sozinha ao pressionar Enter.</span>
@@ -327,6 +432,27 @@ function viewLicao(moduloId, licaoId) {
     };
   }
 
+  // Barra de toque: pointerdown com preventDefault mantem o foco no campo
+  // invisivel, senao o teclado virtual fecharia a cada simbolo digitado.
+  document.getElementById('teclas-rapidas').addEventListener('pointerdown', (e) => {
+    const alvo = e.target.closest('button');
+    if (!alvo) return;
+    e.preventDefault();
+    if (alvo.dataset.foco) {
+      engineAtual.focus();
+      return;
+    }
+    if (alvo.dataset.apagar) {
+      engineAtual.apagar();
+      return;
+    }
+    const ch = alvo.dataset.ch === '\\n' ? '\n' : alvo.dataset.ch;
+    engineAtual.digitar(ch);
+    engineAtual.focus();
+  });
+
+  ajustarParaTecladoVirtual();
+
   app._onEsc = (e) => {
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -336,6 +462,38 @@ function viewLicao(moduloId, licaoId) {
     }
   };
   document.addEventListener('keydown', app._onEsc);
+}
+
+/**
+ * O teclado virtual nao redimensiona a janela: ele encolhe a visualViewport.
+ * Sem isso o editor fica escondido atras do teclado no celular.
+ */
+function ajustarParaTecladoVirtual() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+
+  const aplicar = () => {
+    const editor = document.getElementById('editor');
+    if (!editor) return;
+    const tecladoAberto = window.innerHeight - vv.height > 120;
+    document.body.classList.toggle('teclado-aberto', tecladoAberto);
+    // sobra para o editor: viewport visivel menos o cabecalho da licao
+    const disponivel = Math.max(140, vv.height - editor.getBoundingClientRect().top - 120);
+    editor.style.maxHeight = tecladoAberto ? disponivel + 'px' : '';
+    if (tecladoAberto) {
+      const atual = editor.querySelector('.ch.atual');
+      if (atual) atual.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+  };
+
+  if (app._vvHandler) {
+    vv.removeEventListener('resize', app._vvHandler);
+    vv.removeEventListener('scroll', app._vvHandler);
+  }
+  app._vvHandler = aplicar;
+  vv.addEventListener('resize', aplicar);
+  vv.addEventListener('scroll', aplicar);
+  aplicar();
 }
 
 function finalizarLicao(modulo, licao, m) {
@@ -1167,6 +1325,13 @@ function limpar() {
   }
   const overlay = document.getElementById('overlay');
   if (overlay && overlay._onEnter) document.removeEventListener('keydown', overlay._onEnter);
+
+  if (app._vvHandler && window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', app._vvHandler);
+    window.visualViewport.removeEventListener('scroll', app._vvHandler);
+    app._vvHandler = null;
+    document.body.classList.remove('teclado-aberto');
+  }
 }
 
 function rotear() {

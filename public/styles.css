@@ -431,6 +431,7 @@ input[type="range"] { accent-color: var(--acc); width: 130px; }
 .painel-modo[hidden] { display: none; }
 .acoes-modulo { display: flex; gap: 8px; flex-wrap: wrap; }
 .mini-btn { padding: 4px 10px; font-size: 11px; margin-top: 6px; }
+.pill.publicado { background: rgba(90, 209, 160, 0.14); color: var(--ok); align-self: center; }
 .unidade-cab h2 .tag-ia { vertical-align: middle; }
 .preview-lista li .mini { display: block; }
 
@@ -458,10 +459,69 @@ input[type="range"] { accent-color: var(--acc); width: 130px; }
 .preview-lista ul { padding-left: 16px; margin: 4px 0 10px; }
 .preview-lista b { color: var(--txt); }
 
+/* --------------------------- barra de toque ------------------------------- */
+
+/* so aparece onde faz sentido: tela estreita ou ponteiro grosso (dedo) */
+.teclas-rapidas { display: none; }
+
+@media (max-width: 860px), (pointer: coarse) {
+  .teclas-rapidas {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 10px; padding: 10px;
+    background: var(--bg-2); border: 1px solid var(--linha); border-radius: 12px;
+  }
+}
+
+.tecla, .tecla-toque {
+  font-family: var(--mono); font-size: 16px;
+  min-width: 42px; height: 42px; padding: 0 10px;
+  background: var(--bg-3); color: var(--txt);
+  border: 1px solid var(--linha); border-radius: 8px;
+  cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.tecla:active { background: var(--acc-soft); border-color: var(--acc); transform: translateY(1px); }
+.tecla.larga { min-width: 58px; font-size: 18px; }
+.tecla-toque {
+  font-family: var(--sans); font-size: 13px; flex: 1; min-width: 140px;
+  background: var(--acc-soft); border-color: var(--acc); color: var(--txt);
+}
+body.teclado-aberto .tecla-toque { display: none; }
+body.teclado-aberto .licao-cab, body.teclado-aberto .explicacao,
+body.teclado-aberto .enunciado, body.teclado-aberto .licao-rodape-acoes { display: none; }
+body.teclado-aberto .teclas-rapidas { position: sticky; bottom: 8px; z-index: 5; }
+
+/* ------------------------------ responsivo -------------------------------- */
+
+@media (max-width: 860px) {
+  .painel-duplo { grid-template-columns: 1fr; }
+  .cabecalho-modulo, .licao-cab { flex-direction: column; gap: 12px; }
+  .config-linha { flex-direction: column; align-items: stretch; gap: 12px; }
+  .config-controle { align-self: flex-start; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 700px) {
-  .topbar { flex-wrap: wrap; gap: 12px; padding: 12px 16px; }
-  .app { padding: 20px 14px 60px; }
-  .hero h1 { font-size: 26px; }
-  .code-surface { font-size: 13px; }
-  .gutter { width: 34px; padding-right: 10px; }
+  .topbar { flex-wrap: wrap; gap: 10px; padding: 10px 14px; }
+  .marca span:last-child { font-size: 15px; }
+  .nav { order: 3; width: 100%; margin-left: 0; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+  .nav a { white-space: nowrap; padding: 6px 11px; font-size: 13px; }
+  .perfil { margin-left: auto; gap: 10px; }
+  .nivel { min-width: 104px; }
+  .app { padding: 18px 12px 48px; }
+  .hero h1 { font-size: 24px; }
+  .hero.pequeno h1 { font-size: 20px; }
+  .code-surface { font-size: calc(var(--code-size, 15px) - 2px); }
+  .gutter { width: 30px; padding-right: 10px; }
+  .editor { padding: 12px 12px 12px 0; max-height: 46vh; }
+  .hud { gap: 12px; padding: 10px 12px; }
+  .hud-item { min-width: 46px; }
+  .hud-valor { font-size: 16px; }
+  .hud select { max-width: 132px; }
+  .grid-licoes { grid-template-columns: 1fr; }
+  .grid-modulos { grid-template-columns: 1fr; }
+  .resultado-grid { grid-template-columns: repeat(2, 1fr); }
+  .modal { padding: 20px; }
+  .cards-stats { grid-template-columns: repeat(2, 1fr); }
+  .abas { overflow-x: auto; }
+  .config-acoes .btn, .lab-acoes .btn { flex: 1; min-width: 140px; }
 }

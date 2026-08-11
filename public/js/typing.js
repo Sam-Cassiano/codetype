@@ -58,7 +58,12 @@ export class TypingEngine {
 
   destroy() {
     document.removeEventListener('keydown', this._onKey, true);
-    if (this._input && this._input.parentNode) this._input.remove();
+    if (this._onClick) this.container.removeEventListener('click', this._onClick);
+    if (this._input) {
+      this._input.removeEventListener('beforeinput', this._onBeforeInput);
+      this._input.removeEventListener('input', this._onInput);
+      if (this._input.parentNode) this._input.remove();
+    }
   }
 
   /* ------------------------------ renderizacao ---------------------------- */
@@ -121,24 +126,86 @@ export class TypingEngine {
   /* -------------------------------- teclado ------------------------------- */
 
   _bind() {
-    // input invisivel apenas para abrir o teclado em telas touch
+    // Campo invisivel que recebe o teclado virtual. No desktop a digitacao
+    // chega por keydown; no celular o teclado do Android manda keydown com
+    // key === 'Unidentified', entao o caminho real e o beforeinput.
     const input = document.createElement('input');
     input.className = 'ghost-input';
-    input.setAttribute('aria-hidden', 'true');
-    input.autocapitalize = 'off';
-    input.autocomplete = 'off';
+    input.type = 'text';
+    input.setAttribute('aria-label', 'area de digitacao');
+    input.setAttribute('autocapitalize', 'none');
+    input.setAttribute('autocorrect', 'off');
+    input.setAttribute('autocomplete', 'off');
+    input.setAttribute('enterkeyhint', 'enter');
     input.spellcheck = false;
     this.container.appendChild(input);
     this._input = input;
 
+    this._ultimaTeclaFisica = 0;
+
     this._onKey = (e) => this._handleKey(e);
     document.addEventListener('keydown', this._onKey, true);
 
-    this.container.addEventListener('click', () => input.focus({ preventScroll: true }));
+    this._onBeforeInput = (e) => this._handleBeforeInput(e);
+    input.addEventListener('beforeinput', this._onBeforeInput);
+
+    // rede de seguranca: se algum teclado ignorar o preventDefault, o texto
+    // que sobrar no campo e consumido aqui e o campo volta a ficar vazio
+    this._onInput = () => {
+      const texto = input.value;
+      if (!texto) return;
+      input.value = '';
+      if (this._recemProcessado()) return;
+      for (const ch of texto) this._digitar(ch);
+    };
+    input.addEventListener('input', this._onInput);
+
+    this._onClick = () => this.focus();
+    this.container.addEventListener('click', this._onClick);
+  }
+
+  _recemProcessado() {
+    return performance.now() - this._ultimaTeclaFisica < 60;
+  }
+
+  _handleBeforeInput(e) {
+    if (this.finalizado) return;
+    if (e.cancelable) e.preventDefault();
+    if (this._recemProcessado()) return; // o keydown do desktop ja cuidou
+
+    const tipo = e.inputType;
+    if (tipo === 'deleteContentBackward' || tipo === 'deleteWordBackward') {
+      this._voltar();
+      return;
+    }
+    if (tipo === 'insertLineBreak' || tipo === 'insertParagraph') {
+      this._digitar('\n');
+      return;
+    }
+    if (tipo === 'insertText' || tipo === 'insertCompositionText' || tipo === 'insertFromPaste') {
+      for (const ch of e.data || '') this._digitar(ch === '\n' ? '\n' : ch);
+    }
+  }
+
+  /** Entrada por toque (barra de simbolos), tratada como digitacao normal. */
+  digitar(ch) {
+    if (this.finalizado) return;
+    this._ultimaTeclaFisica = performance.now();
+    this._digitar(ch);
+  }
+
+  apagar() {
+    if (this.finalizado) return;
+    this._ultimaTeclaFisica = performance.now();
+    this._voltar();
   }
 
   focus() {
     if (this._input) this._input.focus({ preventScroll: true });
+  }
+
+  get focado() {
+    return document.activeElement === this._input;
   }
 
   _handleKey(e) {
@@ -147,19 +214,24 @@ export class TypingEngine {
     if (e.target && (e.target.tagName === 'TEXTAREA' || (e.target.tagName === 'INPUT' && e.target !== this._input))) return;
 
     const k = e.key;
+    // teclado virtual do Android manda isso: quem resolve e o beforeinput
+    if (k === 'Unidentified' || k === 'Process' || e.isComposing || e.keyCode === 229) return;
 
     if (k === 'Backspace') {
       e.preventDefault();
+      this._ultimaTeclaFisica = performance.now();
       this._voltar();
       return;
     }
     if (k === 'Enter') {
       e.preventDefault();
+      this._ultimaTeclaFisica = performance.now();
       this._digitar('\n');
       return;
     }
     if (k === 'Tab') {
       e.preventDefault();
+      this._ultimaTeclaFisica = performance.now();
       // Tab so vale quando o proximo caractere realmente e um espaco
       if (WHITESPACE.test(this.code[this.pos] || '')) {
         while (WHITESPACE.test(this.code[this.pos] || '')) this._aceitar();
@@ -169,6 +241,7 @@ export class TypingEngine {
     }
     if (k.length === 1) {
       e.preventDefault();
+      this._ultimaTeclaFisica = performance.now();
       this._digitar(k);
     }
   }

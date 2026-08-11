@@ -78,6 +78,25 @@ Atalhos: `Esc` reinicia o trecho · `Enter` na tela de resultado vai para a pró
 
 ---
 
+## No celular
+
+O treino funciona em telas pequenas e com teclado virtual — inclusive na versão publicada na
+Vercel, aberta pelo navegador do telefone.
+
+- **Entrada por `beforeinput`**: o teclado do Android manda `keydown` com `key: "Unidentified"`
+  (keyCode 229) em vez do caractere, então digitar via `keydown` simplesmente não funciona no
+  celular. O motor escuta `beforeinput` num campo invisível e trata `insertText`,
+  `insertLineBreak` e `deleteContentBackward`. No desktop o `keydown` continua sendo o caminho,
+  com uma janela de 60 ms que impede o mesmo caractere de contar duas vezes.
+- **Barra de símbolos**: acima do teclado aparecem os caracteres não alfanuméricos **da própria
+  lição**, ordenados por frequência — justamente os que o teclado virtual esconde numa segunda
+  camada. Os toques usam `pointerdown` com `preventDefault` para o campo não perder o foco (senão
+  o teclado fecharia a cada símbolo). Tem também `⏎` e `⌫`.
+- **Teclado aberto**: o teclado virtual não redimensiona a janela, encolhe a `visualViewport`. O
+  app detecta isso, recolhe cabeçalho e explicação, limita a altura do editor ao espaço que sobra
+  e mantém o cursor no centro.
+- Layout responsivo: navegação rolável, uma coluna nos mapas e painéis, alvos de toque de 42 px.
+
 ## Configurações (`#/config`)
 
 Tudo vale na hora, sem recarregar, e fica salvo no navegador.
@@ -160,6 +179,22 @@ de uma geração posterior — e o progresso salvo continua válido.
 > Como o desbloqueio é encadeado, uma unidade acrescentada no fim exige a última lição da
 > unidade anterior. Lições já concluídas continuam abertas de qualquer forma.
 
+### Levando um módulo gerado para o celular e para o deploy
+
+Um módulo gerado nasce só no `localStorage` de quem gerou. Há três caminhos para ele sair dali,
+todos na página do módulo:
+
+| Botão | O que faz | Serve para |
+|-------|-----------|-----------|
+| **Publicar no app** | grava o módulo em `public/curriculum/gerados.json` | commitar e o módulo passa a viajar no deploy — aparece na Vercel e no celular de qualquer pessoa, sem API e sem `localStorage` |
+| **Exportar .json** | baixa o módulo como arquivo | mandar para outro aparelho |
+| **Importar módulo** (na home) | lê o `.json` | receber no celular ou em outra máquina |
+
+*Publicar* só funciona rodando pelo código-fonte (`node server.js`), porque grava dentro de
+`public/`; no executável o `public/` está embutido e é somente leitura — nesse caso o app avisa e
+o caminho é exportar/importar. Módulos publicados aparecem com o selo **publicado no app** e são
+carregados de um arquivo estático, então vencem a cópia local em caso de conflito de id.
+
 ### Escrevendo uma unidade à mão
 
 Se preferir escrever em vez de gerar, adicione o objeto direto no array `units` de
@@ -232,6 +267,10 @@ ambiente nem comando de build para configurar.
 **O que funciona publicado:** o treino inteiro — as 56 lições de Kotlin/Android, digitação,
 precisão, WPM, XP, badges, streak, estatísticas, revisão e configurações. Tudo é client-side, e o
 progresso fica no `localStorage` de cada visitante.
+
+Módulos gerados por IA **também aparecem publicados**, desde que você use o botão *Publicar no
+app* antes de commitar (veja a seção do gerador) — eles viram um arquivo estático dentro de
+`public/curriculum/`.
 
 **O que não funciona:** o gerador com IA e a persistência em `data/`. As rotas `/api/*` são do
 servidor Node, que não sobe na Vercel; e mesmo que subisse, uma função serverless não alcança o

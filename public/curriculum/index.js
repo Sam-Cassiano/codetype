@@ -12,6 +12,16 @@ export const modulosBase = [kotlinAndroid];
  * dentro do executavel nem sequer pode ser reescrito.
  */
 export async function carregarModulos() {
+  // Modulos "publicados": arquivo estatico dentro de public/, entao viajam no
+  // deploy e aparecem em qualquer aparelho, sem API e sem localStorage.
+  let publicados = [];
+  try {
+    const res = await fetch('curriculum/gerados.json', { cache: 'no-cache' });
+    if (res.ok) publicados = await res.json();
+  } catch {
+    /* nenhum modulo publicado ainda */
+  }
+
   let doDisco = [];
   try {
     const res = await fetch('/api/modules');
@@ -30,7 +40,8 @@ export async function carregarModulos() {
 
   const gerados = getState().modulosGerados || [];
   const mapa = new Map();
-  for (const m of [...modulosBase, ...gerados]) mapa.set(m.id, m);
+  // publicados por ultimo: a versao do arquivo vence a copia do localStorage
+  for (const m of [...modulosBase, ...gerados, ...publicados]) mapa.set(m.id, m);
 
   // copia rasa: nunca mutar o modulo importado, senao as unidades
   // acrescentadas se duplicariam a cada recarga do catalogo

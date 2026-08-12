@@ -432,6 +432,29 @@ input[type="range"] { accent-color: var(--acc); width: 130px; }
 .acoes-modulo { display: flex; gap: 8px; flex-wrap: wrap; }
 .mini-btn { padding: 4px 10px; font-size: 11px; margin-top: 6px; }
 .pill.publicado { background: rgba(90, 209, 160, 0.14); color: var(--ok); align-self: center; }
+
+/* ------------------------- envio para o GitHub ---------------------------- */
+
+.git-painel {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+  margin: 20px 0 8px; padding: 14px 18px;
+  background: var(--bg-2); border: 1px solid var(--acc); border-radius: 12px;
+}
+.git-painel strong { font-size: 14px; }
+.git-painel p { margin: 4px 0 0; }
+.git-painel code { color: var(--acc); }
+.git-painel.limpo {
+  border-color: var(--linha); color: var(--txt-2); font-size: 13px; padding: 10px 16px;
+}
+.git-log {
+  background: #0a0c13; border: 1px solid var(--linha); border-radius: 10px;
+  padding: 12px; font-family: var(--mono); font-size: 11px;
+  max-height: 220px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+  margin-bottom: 16px;
+}
+.git-log .ok { color: var(--ok); }
+.git-log .falhou { color: var(--erro); }
+.git-log div + div { margin-top: 4px; }
 .unidade-cab h2 .tag-ia { vertical-align: middle; }
 .preview-lista li .mini { display: block; }
 

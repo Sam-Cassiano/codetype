@@ -12,7 +12,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, execFile } = require('child_process');
 
 const EMBUTIDOS = globalThis.__CODETYPE_FILES__ || null;
 const EMPACOTADO = !!EMBUTIDOS;
@@ -130,6 +130,86 @@ const saveModules = (list) => gravarJSON(MODULES_FILE, list);
 const loadExtensoes = () => lerJSON(EXTENSOES_FILE, {});
 const saveExtensoes = (mapa) => gravarJSON(EXTENSOES_FILE, mapa);
 
+/* ------------------------------------ Git ---------------------------------- */
+
+const ARQUIVO_GERADOS = path.join('public', 'curriculum', 'gerados.json');
+
+/**
+ * Roda um comando git no projeto. GIT_TERMINAL_PROMPT=0 e essencial: sem isso
+ * um push que precise de senha travaria o servidor esperando um terminal que
+ * nao existe. Assim ele falha na hora, com mensagem.
+ */
+function git(args, timeout = 20000) {
+  return new Promise((resolve) => {
+    execFile(
+      'git',
+      args,
+      { cwd: __dirname, timeout, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } },
+      (err, stdout, stderr) => {
+        resolve({
+          ok: !err,
+          codigo: err ? err.code : 0,
+          saida: String(stdout || '').trim(),
+          erro: String(stderr || '').trim() || (err ? err.message : '')
+        });
+      }
+    );
+  });
+}
+
+async function estadoDoGit() {
+  const dentro = await git(['rev-parse', '--is-inside-work-tree']);
+  if (!dentro.ok) return { repo: false };
+
+  const [modificado, branch, upstream, remoto] = await Promise.all([
+    git(['status', '--porcelain', '--', ARQUIVO_GERADOS]),
+    git(['rev-parse', '--abbrev-ref', 'HEAD']),
+    git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']),
+    git(['remote', 'get-url', 'origin'])
+  ]);
+
+  let naoEnviados = null;
+  if (upstream.ok) {
+    const contagem = await git(['rev-list', '--count', '@{u}..HEAD']);
+    if (contagem.ok) naoEnviados = Number(contagem.saida) || 0;
+  }
+
+  return {
+    repo: true,
+    branch: branch.saida,
+    remoto: remoto.ok ? remoto.saida : null,
+    upstream: upstream.ok ? upstream.saida : null,
+    arquivoModificado: modificado.saida.length > 0,
+    naoEnviados
+  };
+}
+
+async function enviarModulos(mensagem) {
+  const passos = [];
+  const registrar = (titulo, r) => {
+    passos.push({ titulo, ok: r.ok, saida: r.saida || r.erro });
+    return r;
+  };
+
+  const estado = await estadoDoGit();
+  if (!estado.repo) {
+    return { ok: false, passos: [{ titulo: 'git', ok: false, saida: 'a pasta do projeto nao e um repositorio git' }] };
+  }
+
+  registrar('git add', await git(['add', '--', ARQUIVO_GERADOS]));
+
+  const staged = await git(['diff', '--cached', '--name-only']);
+  if (staged.saida.includes('gerados.json')) {
+    const commit = registrar('git commit', await git(['commit', '-m', mensagem]));
+    if (!commit.ok) return { ok: false, passos, estado: await estadoDoGit() };
+  } else {
+    passos.push({ titulo: 'git commit', ok: true, saida: 'nada novo para commitar' });
+  }
+
+  const push = registrar('git push', await git(['push'], 90000));
+  return { ok: push.ok, passos, estado: await estadoDoGit() };
+}
+
 /* --------------------------------- Estatico -------------------------------- */
 
 function serveStatic(req, res) {
@@ -228,6 +308,23 @@ const server = http.createServer(async (req, res) => {
       const lista = lerJSON(arquivo, []).filter((m) => m.id !== id);
       fs.writeFileSync(arquivo, JSON.stringify(lista, null, 2), 'utf8');
       return json(res, 200, { ok: true, modulos: lista.length });
+    }
+
+    if (url === '/api/git/status' && req.method === 'GET') {
+      if (EMPACOTADO) return json(res, 200, { repo: false, empacotado: true });
+      return json(res, 200, await estadoDoGit());
+    }
+
+    if (url === '/api/git/enviar' && req.method === 'POST') {
+      if (EMPACOTADO) {
+        return json(res, 501, {
+          error: 'somente_no_codigo_fonte',
+          hint: 'O envio para o GitHub so funciona rodando com "node server.js" dentro do projeto.'
+        });
+      }
+      const corpo = await readBody(req).then((t) => (t ? JSON.parse(t) : {}));
+      const mensagem = String(corpo.mensagem || 'modulos gerados').slice(0, 200);
+      return json(res, 200, await enviarModulos(mensagem));
     }
 
     if (url === '/api/extensions') {

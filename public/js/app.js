@@ -133,7 +133,10 @@ function viewHome() {
         <a class="btn primario" href="#/lab">Abrir gerador</a>
       </div>
     </section>
+    <div id="painel-git"></div>
     <p class="dica" id="aviso-home"></p>`;
+
+  renderPainelGit();
 
   const arquivo = document.getElementById('arquivo-modulo');
   document.getElementById('btn-importar-modulo').onclick = () => arquivo.click();
@@ -155,6 +158,91 @@ function viewHome() {
       location.hash = '#/modulo/' + modulo.id;
     } catch (err) {
       document.getElementById('aviso-home').textContent = 'Falhou: ' + err.message;
+    }
+  };
+}
+
+/**
+ * Painel de envio: aparece so quando ha modulo publicado esperando para ir
+ * para o GitHub. Some no executavel e na versao publicada, onde /api/git
+ * nao existe.
+ */
+async function renderPainelGit(destinoId = 'painel-git', logPreservado = '') {
+  const alvo = document.getElementById(destinoId);
+  if (!alvo) return;
+
+  const manterLog = () => {
+    if (!logPreservado) return '';
+    return `<div class="git-log">${logPreservado}</div>`;
+  };
+
+  let g;
+  try {
+    const res = await fetch('/api/git/status');
+    if (!res.ok) return;
+    g = await res.json();
+  } catch {
+    return;
+  }
+  if (!g.repo) return;
+
+  const pendencias = [];
+  if (g.arquivoModificado) pendencias.push('modulo publicado ainda nao commitado');
+  if (g.naoEnviados > 0) pendencias.push(`${g.naoEnviados} commit${g.naoEnviados > 1 ? 's' : ''} sem enviar`);
+
+  if (!pendencias.length) {
+    alvo.innerHTML = `<div class="git-painel limpo">
+      <span>Nenhum modulo esperando envio — <code>${esc(g.branch)}</code> esta em dia com o GitHub.
+      A Vercel publica sozinha a cada envio.</span>
+    </div>${manterLog()}`;
+    return;
+  }
+
+  alvo.innerHTML = `
+    <div class="git-painel">
+      <div>
+        <strong>Pronto para subir</strong>
+        <p class="mini">${esc(pendencias.join(' · '))} — em <code>${esc(g.branch)}</code>${
+    g.remoto ? ' &rarr; ' + esc(g.remoto.replace(/^https:\/\/github\.com\//, '')) : ''
+  }</p>
+      </div>
+      <button class="btn primario" id="btn-git-enviar">Enviar ao GitHub</button>
+    </div>
+    <div class="git-log" id="git-log" ${logPreservado ? '' : 'hidden'}>${logPreservado}</div>`;
+
+  document.getElementById('btn-git-enviar').onclick = async () => {
+    const btn = document.getElementById('btn-git-enviar');
+    const log = document.getElementById('git-log');
+    const gerados = MODULOS.filter((m) => m.publicado).map((m) => m.name);
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    log.hidden = false;
+    log.textContent = 'git add / commit / push...';
+
+    try {
+      const res = await fetch('/api/git/enviar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mensagem: gerados.length ? 'modulos gerados: ' + gerados.join(', ') : 'modulos gerados'
+        })
+      });
+      const r = await res.json();
+      log.innerHTML = (r.passos || [])
+        .map((p) => `<div class="${p.ok ? 'ok' : 'falhou'}">${esc(p.titulo)}: ${esc(p.saida || 'ok')}</div>`)
+        .join('');
+      if (r.ok) {
+        log.innerHTML += '<div class="ok">enviado. A Vercel comeca o deploy agora.</div>';
+      } else {
+        log.innerHTML +=
+          '<div class="falhou">Se pedir credencial, o envio nao roda daqui: use <code>git push</code> no terminal uma vez ' +
+          'para o Windows guardar o token.</div>';
+      }
+      await renderPainelGit(destinoId, log.innerHTML);
+    } catch (err) {
+      log.textContent = 'Falhou: ' + err.message;
+      btn.disabled = false;
+      btn.textContent = 'Enviar ao GitHub';
     }
   };
 }
@@ -238,9 +326,11 @@ function viewModulo(id) {
       </div>
       <p class="dica" id="aviso-modulo"></p>
     </div>
+    <div id="painel-git-modulo"></div>
     ${unidades}`;
 
   const avisoModulo = document.getElementById('aviso-modulo');
+  if (modulo.gerado) renderPainelGit('painel-git-modulo');
 
   const btnExportar = app.querySelector('[data-exportar]');
   if (btnExportar) {

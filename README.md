@@ -195,6 +195,29 @@ todos na página do módulo:
 o caminho é exportar/importar. Módulos publicados aparecem com o selo **publicado no app** e são
 carregados de um arquivo estático, então vencem a cópia local em caso de conflito de id.
 
+### Enviando ao GitHub sem sair do app
+
+Depois de publicar, aparece um painel na home (e na página do módulo) com o que está pendente:
+
+> **Pronto para subir** — módulo publicado ainda não commitado · em `main` → Sam-Cassiano/codetype
+> **[ Enviar ao GitHub ]**
+
+O botão roda `git add` → `git commit` → `git push` e mostra o resultado de cada passo. Depois é
+só esperar o deploy automático da Vercel.
+
+Detalhes que importam:
+
+- o `git add` é **restrito a `public/curriculum/gerados.json`**. Nunca é `git add -A`, então
+  trabalho em andamento em outros arquivos não é arrastado para o commit sem querer;
+- a mensagem sai como `modulos gerados: <nomes dos módulos publicados>`;
+- o git roda com `GIT_TERMINAL_PROMPT=0`. Se faltar credencial, o push **falha na hora** com a
+  mensagem em vez de travar o servidor esperando uma senha que ninguém vai digitar. O commit já
+  feito continua lá, o painel passa a mostrar "1 commit sem enviar" e o botão vira um retry;
+- se o push falhar por credencial, rode `git push` uma vez no terminal para o Windows guardar o
+  token — depois disso o botão funciona sozinho;
+- o painel só existe rodando local: no executável e na versão publicada as rotas `/api/git/*`
+  não respondem e ele simplesmente não aparece.
+
 ### Escrevendo uma unidade à mão
 
 Se preferir escrever em vez de gerar, adicione o objeto direto no array `units` de

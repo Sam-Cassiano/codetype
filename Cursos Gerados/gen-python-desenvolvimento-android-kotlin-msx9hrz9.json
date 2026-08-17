@@ -1,0 +1,1071 @@
+{
+  "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9",
+  "name": "Python — desenvolvimento android kotlin",
+  "language": "python",
+  "icon": "PY",
+  "color": "#5ad1a0",
+  "gerado": true,
+  "criadoEm": 1786972845285,
+  "modelo": "qwen2.5-coder:7b",
+  "description": "Modulo de Python com foco em desenvolvimento android kotlin gerado localmente por qwen2.5-coder:7b.",
+  "units": [
+    {
+      "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1",
+      "title": "Unidade 1 — Simbolos e pontuacao da linguagem",
+      "subtitle": "Entenda os fundamentos da linguagem Python",
+      "lessons": [
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-1",
+          "title": "Caracteres",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Aprenda com os caracteres básicos",
+          "explain": "Os caracteres são os símbolos que formam a linguagem Python. Começamos com os mais simples.",
+          "code": "print('Olá, mundo!')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-2",
+          "title": "Delimitadores",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Entenda como delimitar blocos de código",
+          "explain": "Os delimitadores definem onde um bloco de código começa e termina. Vamos usar chaves {}.",
+          "code": "if True:\n    print('Condição verdadeira')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-3",
+          "title": "Pontuação",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Aprenda a usar a pontuação corretamente",
+          "explain": "A pontuação ajuda a separar elementos do código. Vamos usar vírgulas.",
+          "code": "x = 1, 2, 3\nprint(x)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-4",
+          "title": "Comentários",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Entenda como adicionar comentários em Python",
+          "explain": "Os comentários explicam o código. Vamos usar o símbolo #.",
+          "code": "# Este é um comentário\nprint('Olá, mundo!')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-5",
+          "title": "Operadores Aritméticos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Aprenda os operadores aritméticos básicos",
+          "explain": "Os operadores aritméticos realizam cálculos. Vamos usar +, -, *, /.",
+          "code": "a = 10\nb = 5\nprint(a + b, a - b, a * b, a / b)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-6",
+          "title": "Operadores Relacionais",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Entenda os operadores relacionais",
+          "explain": "Os operadores relacionais comparam valores. Vamos usar ==, !=, >, <.",
+          "code": "a = 10\nb = 5\nprint(a == b, a != b, a > b, a < b)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-7",
+          "title": "Operadores Lógicos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Aprenda os operadores lógicos",
+          "explain": "Os operadores lógicos combinam condições. Vamos usar and, or, not.",
+          "code": "a = True\nb = False\nprint(a and b, a or b, not a)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-8",
+          "title": "Operadores de Atribuição",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Entenda os operadores de atribuição",
+          "explain": "Os operadores de atribuição atribuem valores a variáveis. Vamos usar =, +=, -=.",
+          "code": "x = 5\nx += 3\nprint(x)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-9",
+          "title": "Operadores de Identidade",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Aprenda os operadores de identidade",
+          "explain": "Os operadores de identidade verificam a identidade dos objetos. Vamos usar is, is not.",
+          "code": "a = [1, 2, 3]\nb = a\nprint(a is b, a is not b)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u1-10",
+          "title": "Operadores de Membro",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 20,
+          "brief": "Entenda os operadores de membro",
+          "explain": "Os operadores de membro verificam a pertencimento a um conjunto. Vamos usar in, not in.",
+          "code": "a = [1, 2, 3]\nprint(2 in a, 4 not in a)"
+        }
+      ]
+    },
+    {
+      "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2",
+      "title": "Unidade 2 — Variaveis e tipos",
+      "subtitle": "Dominando Variáveis e Tipos em Python",
+      "lessons": [
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-1",
+          "title": "Declarando Variáveis",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Aprenda a declarar variáveis em Python",
+          "explain": "Aprenda como declarar variáveis em Python e atribuir valores a elas.",
+          "code": "nome = 'João'\nidade = 25"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-2",
+          "title": "Tipos Primitivos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Entenda os tipos primitivos em Python",
+          "explain": "Saiba os tipos primitivos em Python e como declará-los.",
+          "code": "numero_inteiro = 10\nnumero_float = 3.14\nbooleano = True"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-3",
+          "title": "Conversão de Tipos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Aprenda a converter tipos em Python",
+          "explain": "Aprenda como converter tipos de dados em Python.",
+          "code": "numero_str = '10'\nnumero_int = int(numero_str)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-4",
+          "title": "Interpolando Texto",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Aprenda a interpolar texto em Python",
+          "explain": "Saiba como interpolar texto em Python usando variáveis.",
+          "code": "nome = 'João'\nidade = 25\nmensagem = f'Meu nome é {nome} e tenho {idade} anos.'"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-5",
+          "title": "Tipos Booleanos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Entenda o tipo booleano em Python",
+          "explain": "Saiba como declarar e usar variáveis do tipo booleano em Python.",
+          "code": "esta_chuva = False\nesta_sol = True"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-6",
+          "title": "Tipos Números",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Aprenda sobre os tipos de números em Python",
+          "explain": "Conheça os tipos de números em Python e como declará-los.",
+          "code": "numero_int = 10\nnumero_float = 3.14\nnumero_complexo = 2 + 3j"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-7",
+          "title": "Conversão entre Tipos Numéricos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Aprenda a converter entre tipos numéricos em Python",
+          "explain": "Saiba como converter entre inteiros, floats e complexos em Python.",
+          "code": "numero_int = 10\nnumero_float = float(numero_int)\nnumero_complexo = complex(numero_int, 0)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-8",
+          "title": "Interpolando com Expressões",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Aprenda a interpolar com expressões em Python",
+          "explain": "Saiba como interpolar com expressões dentro de strings em Python.",
+          "code": "numero = 5\nresultado = f'O quadrado de {numero} é {numero ** 2}."
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-9",
+          "title": "Tipos de Sequência",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Entenda os tipos de sequência em Python",
+          "explain": "Saiba sobre os tipos de sequência em Python e como declará-los.",
+          "code": "lista = [1, 2, 3]\ntupla = (4, 5, 6)\nconjunto = {7, 8, 9}\nstring = 'Python'"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u2-10",
+          "title": "Interpolando Sequências",
+          "kind": "code",
+          "tags": [
+            "python",
+            "android",
+            "kotlin",
+            "curriculo"
+          ],
+          "minAcc": 0.95,
+          "xp": 25,
+          "brief": "Aprenda a interpolar sequências em Python",
+          "explain": "Saiba como interpolar sequências em Python usando variáveis.",
+          "code": "nomes = ['João', 'Maria', 'Pedro']\nmensagem = f'Os nomes são: {"
+        }
+      ]
+    },
+    {
+      "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3",
+      "title": "Unidade 3 — Operadores e controle de fluxo",
+      "subtitle": "Domine os fundamentos de operadores e controle de fluxo",
+      "lessons": [
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-1",
+          "title": "Operadores Aritméticos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "Soma, subtração, multiplicação e divisão",
+          "explain": "Aprenda a usar os operadores básicos para realizar cálculos matemáticos.",
+          "code": "x = 5\ny = 3\nsoma = x + y\nsubtracao = x - y\nmultiplicacao = x * y\ndivisao = x / y"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-2",
+          "title": "Operadores Lógicos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "E, ou, não",
+          "explain": "Entenda como usar operadores lógicos para combinar condições.",
+          "code": "a = True\nb = False\nresultado_e = a and b\nresultado_ou = a or b\nresultado_nao = not a"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-3",
+          "title": "Condicional If",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "Estrutura condicional simples",
+          "explain": "Aprenda a usar a estrutura if para tomar decisões com base em condições.",
+          "code": "idade = 18\nif idade >= 18:\n    print('Maior de idade')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-4",
+          "title": "Condicional If-Else",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "Estrutura condicional com duas opções",
+          "explain": "Aprenda a usar if-else para tomar decisões entre duas possibilidades.",
+          "code": "numero = 10\nif numero > 0:\n    print('Positivo')\nelse:\n    print('Negativo')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-5",
+          "title": "Condicional If-Elif-Else",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "Estrutura condicional com múltiplas opções",
+          "explain": "Aprenda a usar if-elif-else para tomar decisões entre várias possibilidades.",
+          "code": "numero = 0\nif numero > 0:\n    print('Positivo')\nelif numero < 0:\n    print('Negativo')\nelse:\n    print('Zero')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-6",
+          "title": "Operadores de Comparação",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "Maior, menor, igual, diferente, etc.",
+          "explain": "Entenda como usar operadores de comparação para comparar valores.",
+          "code": "a = 5\nb = 10\nmaior = a > b\nmenor = a < b\nequal = a == b\ndiferente = a != b"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-7",
+          "title": "Estrutura de Repetição For",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "Laço de repetição com iteração sobre uma sequência",
+          "explain": "Aprenda a usar o laço for para iterar sobre uma sequência de itens.",
+          "code": "nomes = ['Alice', 'Bob', 'Charlie']\nfor nome in nomes:\n    print(nome)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-8",
+          "title": "Estrutura de Repetição While",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "Laço de repetição com condição de parada",
+          "explain": "Aprenda a usar o laço while para repetir um bloco de código enquanto uma condição for verdadeira.",
+          "code": "numero = 0\nwhile numero < 5:\n    print(numero)\n    numero += 1"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-9",
+          "title": "Estrutura de Repetição For com Range",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "Laço de repetição com iteração sobre um intervalo de números",
+          "explain": "Aprenda a usar o laço for com range para iterar sobre um intervalo de números.",
+          "code": "for i in range(5):\n    print(i)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u3-10",
+          "title": "Estrutura de Repetição While com Break",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 30,
+          "brief": "Laço de repetição com condição de parada e interrupção",
+          "explain": "Aprenda a usar o laço while com break para interromper a repetição quando uma condição for atingida.",
+          "code": "numero = 0\nwhile True:\n    print(numero)\n    numero += 1\n    if numero >= 5:\n        break"
+        }
+      ]
+    },
+    {
+      "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4",
+      "title": "Unidade 4 — Loops e repeticao",
+      "subtitle": "Dominando Loops e Repetição em Python",
+      "lessons": [
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-1",
+          "title": "Introdução aos Loops",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Entenda o básico dos loops em Python.",
+          "explain": "Aprenda a usar o loop 'for' para iterar sobre coleções.",
+          "code": "for i in range(5):\n    print(i)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-2",
+          "title": "Controle de Fluxo com 'if'",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Aprenda a usar 'if' dentro de loops.",
+          "explain": "Controle a execução de um loop com condições.",
+          "code": "for i in range(10):\n    if i % 2 == 0:\n        print(i)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-3",
+          "title": "Iteração sobre Listas",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Itere sobre listas usando 'for'.",
+          "explain": "Aprenda a percorrer elementos de uma lista.",
+          "code": "nomes = ['Alice', 'Bob', 'Charlie']\nfor nome in nomes:\n    print(nome)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-4",
+          "title": "Controle de Repetição com 'while'",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Aprenda a usar o loop 'while'.",
+          "explain": "Repete um bloco de código enquanto uma condição for verdadeira.",
+          "code": "i = 0\nwhile i < 5:\n    print(i)\n    i += 1"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-5",
+          "title": "Controle de Fluxo com 'break'",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Aprenda a usar 'break' em loops.",
+          "explain": "Interrompe a execução de um loop quando uma condição é atingida.",
+          "code": "for i in range(10):\n    if i == 5:\n        break\n    print(i)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-6",
+          "title": "Controle de Fluxo com 'continue'",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Aprenda a usar 'continue' em loops.",
+          "explain": "Pula a execução atual do loop e continua com a próxima iteração.",
+          "code": "for i in range(10):\n    if i % 2 == 0:\n        continue\n    print(i)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-7",
+          "title": "Iteração sobre Dicionários",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Aprenda a iterar sobre dicionários.",
+          "explain": "Percorra chaves, valores ou ambos em um dicionário.",
+          "code": "pessoas = {'Alice': 25, 'Bob': 30, 'Charlie': 35}\nfor nome, idade in pessoas.items():\n    print(f'{nome} tem {idade} anos')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-8",
+          "title": "Controle de Fluxo com 'else' em Loops",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Aprenda a usar 'else' em loops.",
+          "explain": "Executa um bloco de código quando o loop termina sem ser interrompido.",
+          "code": "for i in range(5):\n    print(i)\nelse:\n    print('Loop terminado')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-9",
+          "title": "Aninhamento de Loops",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Aprenda a aninhar loops.",
+          "explain": "Repete um loop dentro de outro loop.",
+          "code": "for i in range(3):\n    for j in range(2):\n        print(f'i={i}, j={j}')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u4-10",
+          "title": "Iteração sobre Coleções de Coleções",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 35,
+          "brief": "Aprenda a iterar sobre listas de listas.",
+          "explain": "Percorra elementos de uma lista que contém outras listas.",
+          "code": "matriz = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]\nfor linha in matriz:\n    for elemento in linha:\n        print(elemento)"
+        }
+      ]
+    },
+    {
+      "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5",
+      "title": "Unidade 5 — Funcoes",
+      "subtitle": "Dominando Funções em Python",
+      "lessons": [
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-1",
+          "title": "Definindo uma Função Básica",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função que imprima 'Olá, mundo!'",
+          "explain": "Aprenda a estrutura básica de uma função em Python.",
+          "code": "def saudacao():\n    print('Olá, mundo!')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-2",
+          "title": "Função com Parâmetro",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função que receba um nome e imprima uma saudação personalizada",
+          "explain": "Aprenda a usar parâmetros em funções.",
+          "code": "def saudacao(nome):\n    print(f'Olá, {nome}!')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-3",
+          "title": "Retorno de Valor",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função que calcule a soma de dois números",
+          "explain": "Aprenda a retornar valores de uma função.",
+          "code": "def soma(a, b):\n    return a + b"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-4",
+          "title": "Valores Padrão",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função que calcule a área de um retângulo com largura padrão 10",
+          "explain": "Aprenda a usar valores padrão em parâmetros de função.",
+          "code": "def area(largura=10, altura):\n    return largura * altura"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-5",
+          "title": "Função Anônima",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função lambda que multiplique dois números",
+          "explain": "Aprenda a usar funções anônimas em Python.",
+          "code": "multiplica = lambda x, y: x * y"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-6",
+          "title": "Função com Múltiplos Parâmetros",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função que aceite uma lista de números e retorne a soma",
+          "explain": "Aprenda a lidar com múltiplos parâmetros em funções.",
+          "code": "def soma_lista(numeros):\n    return sum(numeros)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-7",
+          "title": "Função Recursiva",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função recursiva que calcule o fatorial de um número",
+          "explain": "Aprenda a usar funções recursivas em Python.",
+          "code": "def fatorial(n):\n    if n == 0:\n        return 1\n    else:\n        return n * fatorial(n - 1)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-8",
+          "title": "Função com Parâmetros Variáveis",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função que aceite um número variável de argumentos",
+          "explain": "Aprenda a usar parâmetros variáveis em funções.",
+          "code": "def soma_variada(*args):\n    return sum(args)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-9",
+          "title": "Função com Parâmetros Nomeados",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função que aceite parâmetros nomeados",
+          "explain": "Aprenda a usar parâmetros nomeados em funções.",
+          "code": "def saudacao(nome, mensagem='Olá'):\n    print(f'{mensagem}, {nome}!')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u5-10",
+          "title": "Função com Parâmetros Nomeados e Variáveis",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 40,
+          "brief": "Crie uma função que aceite parâmetros nomeados e variáveis",
+          "explain": "Aprenda a combinar parâmetros nomeados e variáveis em funções.",
+          "code": "def configuracao(**kwargs):\n    for chave, valor in kwargs.items():\n        print(f'{chave}: {valor}')"
+        }
+      ]
+    },
+    {
+      "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6",
+      "title": "Unidade 6 — Estruturas de dados",
+      "subtitle": "Estruturas de Dados",
+      "lessons": [
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-1",
+          "title": "Lista Simples",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Crie uma lista com três nomes.",
+          "explain": "Aprenda a criar e acessar elementos em uma lista.",
+          "code": "nomes = ['João', 'Maria', 'Pedro']\nprint(nomes[0])"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-2",
+          "title": "Adicionando Elementos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Adicione um novo nome à lista.",
+          "explain": "Aprenda a adicionar elementos a uma lista existente.",
+          "code": "nomes = ['João', 'Maria', 'Pedro']\nnomes.append('Ana')\nprint(nomes)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-3",
+          "title": "Dicionário Básico",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Crie um dicionário com informações sobre uma pessoa.",
+          "explain": "Aprenda a criar e acessar elementos em um dicionário.",
+          "code": "pessoa = {'nome': 'João', 'idade': 30, 'cidade': 'São Paulo'}\nprint(pessoa['nome'])"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-4",
+          "title": "Adicionando Chave-Valor",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Adicione uma nova chave-valor ao dicionário.",
+          "explain": "Aprenda a adicionar novas informações a um dicionário existente.",
+          "code": "pessoa = {'nome': 'João', 'idade': 30, 'cidade': 'São Paulo'}\npessoa['profissao'] = 'Engenheiro'\nprint(pessoa)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-5",
+          "title": "Conjunto Básico",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Crie um conjunto com três números inteiros.",
+          "explain": "Aprenda a criar e acessar elementos em um conjunto.",
+          "code": "numeros = {1, 2, 3}\nprint(numeros)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-6",
+          "title": "Adicionando Elementos ao Conjunto",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Adicione um novo número ao conjunto.",
+          "explain": "Aprenda a adicionar elementos a um conjunto existente.",
+          "code": "numeros = {1, 2, 3}\nnumeros.add(4)\nprint(numeros)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-7",
+          "title": "Iterando em uma Lista",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Imprima todos os nomes na lista usando um loop for.",
+          "explain": "Aprenda a iterar sobre os elementos de uma lista.",
+          "code": "nomes = ['João', 'Maria', 'Pedro']\nfor nome in nomes:\n    print(nome)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-8",
+          "title": "Iterando em um Dicionário",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Imprima todas as chaves e valores do dicionário usando um loop for.",
+          "explain": "Aprenda a iterar sobre os elementos de um dicionário.",
+          "code": "pessoa = {'nome': 'João', 'idade': 30, 'cidade': 'São Paulo'}\nfor chave, valor in pessoa.items():\n    print(chave, valor)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-9",
+          "title": "Operações em Conjuntos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Crie dois conjuntos e imprima a união, interseção e diferença entre eles.",
+          "explain": "Aprenda a realizar operações básicas entre conjuntos.",
+          "code": "conjunto1 = {1, 2, 3}\nconjunto2 = {3, 4, 5}\nprint(conjunto1.union(conjunto2))\nprint(conjunto1.intersection(conjunto2))\nprint(conjunto1.difference(conjunto2))"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u6-10",
+          "title": "Compreensão de Listas",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 45,
+          "brief": "Crie uma lista de números pares de 1 a 10 usando uma compreensão de lista.",
+          "explain": "Aprenda a usar compreensão de lista para criar listas de forma concisa.",
+          "code": "pares = [x for x in range(1, 11) if x % 2 == 0]\nprint(pares)"
+        }
+      ]
+    },
+    {
+      "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7",
+      "title": "Unidade 7 — Organizacao de codigo",
+      "subtitle": "Organizando Seu Código em Python para Android Kotlin",
+      "lessons": [
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-1",
+          "title": "Classe Básica",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Crie uma classe simples em Python",
+          "explain": "Aprenda a estrutura básica de uma classe em Python.",
+          "code": "class MeuPrimeiroClasse:\n    def __init__(self):\n        pass"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-2",
+          "title": "Métodos em Classe",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Adicione um método à classe",
+          "explain": "Aprenda a adicionar métodos para dar funcionalidade à classe.",
+          "code": "class MeuPrimeiroClasse:\n    def __init__(self):\n        pass\n\n    def saudacao(self):\n        print('Olá!')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-3",
+          "title": "Atributos de Classe",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Adicione atributos à classe",
+          "explain": "Aprenda a adicionar atributos para armazenar dados na classe.",
+          "code": "class MeuPrimeiroClasse:\n    def __init__(self, nome):\n        self.nome = nome\n\n    def saudacao(self):\n        print(f'Olá, {self.nome}!')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-4",
+          "title": "Importação de Módulos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Importe um módulo em Python",
+          "explain": "Aprenda como importar módulos para reutilizar código.",
+          "code": "import math\n\nprint(math.sqrt(16))"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-5",
+          "title": "Funções em Módulos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Crie uma função em um módulo",
+          "explain": "Aprenda a criar funções em módulos separados e importá-las.",
+          "code": "# arquivo matematica.py\n\ndef adicao(a, b):\n    return a + b"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-6",
+          "title": "Importando Funções",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Importe uma função de um módulo",
+          "explain": "Aprenda a importar funções específicas de um módulo.",
+          "code": "from matematica import adicao\n\nprint(adicao(5, 3))"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-7",
+          "title": "Organizando Módulos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Crie uma estrutura de diretórios para módulos",
+          "explain": "Aprenda a organizar módulos em estruturas de diretórios.",
+          "code": "# Estrutura de diretórios\n# projeto/\n# ├── main.py\n# └── utils/\n#     └── matematica.py\n\n# main.py\nfrom utils.matematica import adicao\n\nprint(adicao(5, 3))"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-8",
+          "title": "Classes em Módulos",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Crie uma classe em um módulo",
+          "explain": "Aprenda a criar classes em módulos separados e importá-las.",
+          "code": "# arquivo pessoa.py\n\nclass Pessoa:\n    def __init__(self, nome):\n        self.nome = nome\n\n    def saudacao(self):\n        print(f'Olá, {self.nome}!')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-9",
+          "title": "Importando Classes",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Importe uma classe de um módulo",
+          "explain": "Aprenda a importar classes específicas de um módulo.",
+          "code": "from pessoa import Pessoa\n\np = Pessoa('João')\np.saudacao()"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u7-10",
+          "title": "Estilo Idiômatico",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 50,
+          "brief": "Organize seu código seguindo o estilo PEP 8",
+          "explain": "Aprenda a seguir o estilo PEP 8 para manter seu código limpo e organizado.",
+          "code": "# arquivo main.py\nfrom pessoa import Pessoa\n\np = Pessoa('João')\np.saudacao()"
+        }
+      ]
+    },
+    {
+      "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8",
+      "title": "Unidade 8 — Erros e validacao",
+      "subtitle": "Tratamento de Exceções e Validação",
+      "lessons": [
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-1",
+          "title": "Tratamento de Exceções Básico",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Capturar e tratar erros simples",
+          "explain": "Aprenda a capturar e tratar erros usando blocos try-except.",
+          "code": "try:\n    x = int(input('Digite um número: '))\nexcept ValueError:\n    print('Erro: Digite um número válido.')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-2",
+          "title": "Validação de Entrada Básica",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Verificar se a entrada é válida",
+          "explain": "Aprenda a verificar se a entrada do usuário é válida antes de processá-la.",
+          "code": "while True:\n    nome = input('Digite seu nome: ')\n    if nome.isalpha():\n        break\n    else:\n        print('Erro: Nome deve conter apenas letras.')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-3",
+          "title": "Mensagens de Erro Personalizadas",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Exibir mensagens de erro personalizadas",
+          "explain": "Aprenda a exibir mensagens de erro personalizadas para diferentes tipos de erros.",
+          "code": "try:\n    x = int(input('Digite um número: '))\nexcept ValueError:\n    print('Erro: Por favor, digite um número válido.')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-4",
+          "title": "Tratamento de Exceções Multiplas",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Capturar múltiplos tipos de exceções",
+          "explain": "Aprenda a capturar múltiplos tipos de exceções em um bloco try-except.",
+          "code": "try:\n    x = int(input('Digite um número: '))\n    y = 10 / x\nexcept ValueError:\n    print('Erro: Digite um número válido.')\nexcept ZeroDivisionError:\n    print('Erro: Não pode dividir por zero.')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-5",
+          "title": "Validação de Entrada com Função",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Validar entrada dentro de uma função",
+          "explain": "Aprenda a validar a entrada dentro de uma função para garantir que ela seja válida antes de ser usada.",
+          "code": "def obter_idade():\n    while True:\n        idade = input('Digite sua idade: ')\n        if idade.isdigit() and int(idade) >= 0:\n            return int(idade)\n        else:\n            print('Erro: Idade deve ser um número não negativo.')\nidade = obter_idade()"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-6",
+          "title": "Exceções Personalizadas",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Criar exceções personalizadas",
+          "explain": "Aprenda a criar exceções personalizadas para casos específicos em seu código.",
+          "code": "class IdadeInvalidaError(Exception):\n    pass\ndef obter_idade():\n    while True:\n        idade = input('Digite sua idade: ')\n        if idade.isdigit() and int(idade) >= 0:\n            return int(idade)\n        else:\n            raise IdadeInvalidaError('Erro: Idade deve ser um número não negativo.')\ntry:\n    idade = obter_idade()\nexcept IdadeInvalidaError as e:\n    print(e)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-7",
+          "title": "Validação de Entrada com Expressões Regulares",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Validar entrada usando expressões regulares",
+          "explain": "Aprenda a usar expressões regulares para validar entrada em Python.",
+          "code": "import re\ndef validar_email(email):\n    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'\n    if re.match(pattern, email):\n        return True\n    else:\n        return False\ne-mail = input('Digite seu e-mail: ')\nif validar_email(e-mail):\n    print('E-mail válido.')\nelse:\n    print('Erro: E-mail inválido.')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-8",
+          "title": "Tratamento de Exceções com Finally",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Executar código após tratamento de exceções",
+          "explain": "Aprenda a usar o bloco finally para executar código após o tratamento de exceções, independentemente de ocorrer um erro ou não.",
+          "code": "try:\n    x = int(input('Digite um número: '))\n    y = 10 / x\nexcept ValueError:\n    print('Erro: Digite um número válido.')\nfinally:\n    print('Operação concluída.')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-9",
+          "title": "Validação de Entrada com Função e Expressões Regulares",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Validar entrada com funções e expressões regulares",
+          "explain": "Aprenda a combinar funções e expressões regulares para validar entrada em Python de forma eficaz.",
+          "code": "import re\ndef validar_cpf(cpf):\n    pattern = r'^\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}$'\n    if re.match(pattern, cpf):\n        return True\n    else:\n        return False\ncpf = input('Digite seu CPF: ')\nif validar_cpf(cpf):\n    print('CPF válido.')\nelse:\n    print('Erro: CPF inválido.')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u8-10",
+          "title": "Tratamento de Exceções e Validação em Funções",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 55,
+          "brief": "Tratar exceções e validar entrada em funções",
+          "explain": "Aprenda a tratar exceções e validar entrada dentro de funções para garantir que o código seja robusto e seguro.",
+          "code": "def dividir(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        print('Erro: Não pode dividir por zero.')\n        return None\ndef obter_numeros():\n    while True:\n        try:\n            x = int(input('Digite o numerador: '))\n            y = int(input('Digite o denominador: '))\n            return x, y\n        except ValueError:\n            print('Erro: Digite números válidos.')\nx, y = obter_numeros()\nif x is not None and y is not None:\n    resultado = dividir(x, y)\n    if resultado is not None:\n        print(f'Resultado: {resultado}')"
+        }
+      ]
+    },
+    {
+      "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9",
+      "title": "Unidade 9 — Codigo do dia a dia",
+      "subtitle": "Prática Real de Códigos em Python para Android Kotlin",
+      "lessons": [
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-1",
+          "title": "Print básico",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Imprime 'Olá, mundo!'",
+          "explain": "Primeiro passo em Python, aprendendo a saída de texto.",
+          "code": "print('Olá, mundo!')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-2",
+          "title": "Variáveis simples",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Define e imprime uma variável",
+          "explain": "Introdução a variáveis em Python, armazenando e usando dados.",
+          "code": "nome = 'Alice'\nprint(nome)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-3",
+          "title": "Operações matemáticas",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Realiza operações básicas",
+          "explain": "Aprendendo a realizar cálculos simples em Python.",
+          "code": "soma = 5 + 3\nprint(soma)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-4",
+          "title": "Condicional IF",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Condicional simples",
+          "explain": "Introdução ao controle de fluxo condicional em Python.",
+          "code": "idade = 18\nif idade >= 18:\n    print('Maior de idade')"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-5",
+          "title": "Laço FOR",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Laço simples",
+          "explain": "Aprendendo a usar laços para repetição em Python.",
+          "code": "for i in range(5):\n    print(i)"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-6",
+          "title": "Função simples",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Define e chama uma função",
+          "explain": "Introdução à criação e uso de funções em Python.",
+          "code": "def saudacao(nome):\n    return 'Olá, ' + nome\nprint(saudacao('Alice'))"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-7",
+          "title": "Listas",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Cria e manipula uma lista",
+          "explain": "Aprendendo a trabalhar com listas em Python.",
+          "code": "nomes = ['Alice', 'Bob', 'Charlie']\nprint(nomes[0])"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-8",
+          "title": "Dicionários",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Cria e manipula um dicionário",
+          "explain": "Introdução aos dicionários em Python, estruturas de dados associativas.",
+          "code": "pessoa = {'nome': 'Alice', 'idade': 25}\nprint(pessoa['nome'])"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-9",
+          "title": "Classe simples",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Define e usa uma classe",
+          "explain": "Aprendendo a criar e instanciar classes em Python.",
+          "code": "class Pessoa:\n    def __init__(self, nome):\n        self.nome = nome\n    def saudacao(self):\n        return 'Olá, ' + self.nome\nalice = Pessoa('Alice')\nprint(alice.saudacao())"
+        },
+        {
+          "id": "gen-python-desenvolvimento-android-kotlin-msx9hrz9-u9-10",
+          "title": "Interação com o usuário",
+          "kind": "code",
+          "tags": [],
+          "minAcc": 0.95,
+          "xp": 60,
+          "brief": "Recebe entrada do usuário",
+          "explain": "Aprendendo a interagir com o usuário em Python.",
+          "code": "nome = input('Digite seu nome: ')\nprint('Olá, ' + nome)"
+        }
+      ]
+    }
+  ]
+}

@@ -125,41 +125,15 @@ function viewHome() {
     <section class="bloco-lab">
       <div>
         <h3>Faltou alguma linguagem?</h3>
-        <p>Gere um modulo novo com os modelos que ja rodam na sua maquina via Ollama — ou importe um modulo que voce ja gerou em outro aparelho.</p>
+        <p>Gere um modulo novo com os modelos que ja rodam na sua maquina via Ollama.</p>
       </div>
       <div class="acoes-modulo">
-        <button class="btn" id="btn-importar-modulo">Importar modulo</button>
-        <input type="file" id="arquivo-modulo" accept="application/json,.json" hidden />
         <a class="btn primario" href="#/lab">Abrir gerador</a>
       </div>
     </section>
-    <div id="painel-git"></div>
-    <p class="dica" id="aviso-home"></p>`;
+    <div id="painel-git"></div>`;
 
   renderPainelGit();
-
-  const arquivo = document.getElementById('arquivo-modulo');
-  document.getElementById('btn-importar-modulo').onclick = () => arquivo.click();
-  arquivo.onchange = async () => {
-    const f = arquivo.files && arquivo.files[0];
-    if (!f) return;
-    try {
-      const modulo = JSON.parse(await f.text());
-      if (!modulo || !modulo.id || !Array.isArray(modulo.units)) {
-        throw new Error('esse arquivo nao e um modulo do CodeType');
-      }
-      store.adicionarModulo({ ...modulo, gerado: true });
-      await fetch('/api/modules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(modulo)
-      }).catch(() => {});
-      MODULOS = await carregarModulos();
-      location.hash = '#/modulo/' + modulo.id;
-    } catch (err) {
-      document.getElementById('aviso-home').textContent = 'Falhou: ' + err.message;
-    }
-  };
 }
 
 /**
@@ -256,6 +230,24 @@ function baixarJSON(nome, texto) {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Grava uma copia do modulo em Cursos Gerados/<id>.json, na raiz do projeto —
+ * em segundo plano, sempre que um modulo e criado, publicado ou ganha uma
+ * unidade nova. E so um backup versionado no git, independente do
+ * localStorage e do "Publicar no app" (que e o que realmente afeta o que o
+ * app carrega). Silenciosa de proposito: so funciona rodando pelo
+ * codigo-fonte (no executavel e na versao publicada essa rota nem existe, e
+ * isso e esperado — nao vale interromper quem esta so treinando no celular
+ * com um aviso de erro por causa disso).
+ */
+function salvarCopiaEmCursosGerados(modulo) {
+  fetch('/api/cursos-gerados', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(modulo)
+  }).catch(() => {});
+}
+
 /* ------------------------------- MAPA DO MODULO --------------------------- */
 
 function viewModulo(id) {
@@ -336,7 +328,7 @@ function viewModulo(id) {
   if (btnExportar) {
     btnExportar.onclick = () => {
       baixarJSON(`${modulo.id}.json`, JSON.stringify(modulo, null, 2));
-      avisoModulo.textContent = 'Modulo baixado. Da para importar em outro aparelho pela tela de Modulos.';
+      avisoModulo.textContent = 'Modulo baixado. Uma copia tambem fica salva em Cursos Gerados/, no projeto.';
     };
   }
 
@@ -344,14 +336,16 @@ function viewModulo(id) {
   if (btnPublicar) {
     btnPublicar.onclick = async () => {
       btnPublicar.disabled = true;
+      const paraPublicar = { ...modulo, units: modulo.units.filter((u) => !u.extensao) };
       try {
         const res = await fetch('/api/publish', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...modulo, units: modulo.units.filter((u) => !u.extensao) })
+          body: JSON.stringify(paraPublicar)
         });
         const dados = await res.json();
         if (!res.ok) throw new Error(dados.hint || dados.error || 'falhou');
+        salvarCopiaEmCursosGerados(paraPublicar);
         MODULOS = await carregarModulos();
         viewModulo(modulo.id);
         document.getElementById('aviso-modulo').textContent =
@@ -1135,8 +1129,11 @@ async function viewLab(moduloAlvo) {
             <input id="f-foco" placeholder="ex.: automacao, backend, data science" />
           </label>
           <label>Nivel <select id="f-nivel">${niveis}</select></label>
-          <label>Unidades <input id="f-unidades" type="number" min="1" max="9" value="4" /></label>
-          <label>Licoes por unidade <input id="f-licoes" type="number" min="2" max="6" value="3" /></label>
+          <label>Unidades <input id="f-unidades" type="number" min="1" value="4" /></label>
+          <label>Licoes por unidade <input id="f-licoes" type="number" min="2" value="3" /></label>
+          <label title="Quantas unidades sao pedidas ao mesmo tempo. So acelera de verdade se o Ollama aceitar mais de uma requisicao por vez (OLLAMA_NUM_PARALLEL) ou tiver GPU sobrando; sem isso, mais paralelismo so faz as requisicoes enfileirarem do mesmo jeito.">
+            Unidades em paralelo <input id="f-paralelo" type="number" min="1" value="1" />
+          </label>
         </div>
       </div>
 
@@ -1159,7 +1156,7 @@ async function viewLab(moduloAlvo) {
             </datalist>
           </label>
           <label>Nivel <select id="a-nivel">${niveis}</select></label>
-          <label>Licoes <input id="a-licoes" type="number" min="2" max="6" value="4" /></label>
+          <label>Licoes <input id="a-licoes" type="number" min="2" value="4" /></label>
         </div>
         <label class="campo-largo">O que a unidade deve cobrir (opcional)
           <input id="a-detalhe" placeholder="ex.: @Test, assertEquals, mock de repositorio, teste de ViewModel com coroutines" />
@@ -1171,7 +1168,11 @@ async function viewLab(moduloAlvo) {
         <button class="btn primario" id="btn-gerar">Gerar</button>
         <button class="btn perigo" id="btn-cancelar" hidden>Cancelar</button>
         <span class="dica" id="lab-status">
-          Uma requisicao por unidade. Em CPU, conte ~2 a 4 minutos por unidade — o resultado aparece aqui conforme fica pronto.
+          Sem limite de unidades, licoes ou tamanho de resposta — cada unidade e pedida em blocos de ate 6 licoes por
+          vez, entao um modulo grande vira varias requisicoes menores em sequencia (ou em paralelo, se voce aumentar
+          "Unidades em paralelo"), no ritmo que a sua maquina aguentar. Em CPU, conte ~2 a 4 minutos por bloco — o
+          resultado aparece aqui conforme fica pronto. Um bloco que falhar ganha uma segunda tentativa automatica
+          antes de ser descartado.
         </span>
       </div>
 
@@ -1219,17 +1220,33 @@ async function viewLab(moduloAlvo) {
 
   /* ------------------------------ modelos -------------------------------- */
 
+  // qwen2.5-coder e especializado em geracao de codigo (bom equilibrio entre
+  // qualidade e velocidade em CPU); qwen3-coder tambem conta como recomendado
+  // para quem ja tem ele. Marcamos visualmente e preferimos como padrao
+  // quando o usuario ainda nao escolheu um modelo manualmente.
+  const ehModeloRecomendado = (nome) => /qwen2\.5-coder|qwen3-coder/i.test(nome);
+
   try {
     const modelos = await listarModelos();
+    const recomendado = modelos.find((m) => ehModeloRecomendado(m.nome));
     sel.innerHTML = modelos
-      .map(
-        (m) =>
-          `<option value="${esc(m.nome)}" ${m.nome === s.settings.modelo ? 'selected' : ''}>${esc(
-            m.nome
-          )} (${(m.tamanho / 1e9).toFixed(1)} GB)</option>`
-      )
+      .map((m) => {
+        const marcado = ehModeloRecomendado(m.nome);
+        const selecionado = s.settings.modelo ? m.nome === s.settings.modelo : m === recomendado;
+        return `<option value="${esc(m.nome)}" ${selecionado ? 'selected' : ''}>${esc(m.nome)} (${(
+          m.tamanho / 1e9
+        ).toFixed(1)} GB)${marcado ? ' — recomendado p/ codigo' : ''}</option>`;
+      })
       .join('');
-    if (!s.settings.modelo && modelos[0]) store.setSetting('modelo', modelos[0].nome);
+    if (!s.settings.modelo) {
+      const escolhido = recomendado || modelos[0];
+      if (escolhido) store.setSetting('modelo', escolhido.nome);
+    }
+    if (!recomendado) {
+      status.textContent =
+        'Dica: qwen2.5-coder e especializado em codigo e roda bem em CPU. Para instalar: "ollama pull qwen2.5-coder:7b" ' +
+        '(maquinas mais simples) ou "ollama pull qwen2.5-coder:14b" (se sua maquina ja aguenta modelos de ~12b-14b).';
+    }
   } catch (err) {
     sel.innerHTML = '<option>indisponivel</option>';
     status.textContent = 'Ollama indisponivel: ' + err.message;
@@ -1260,10 +1277,17 @@ async function viewLab(moduloAlvo) {
     stream.hidden = false;
     stream.textContent = 'enviando o primeiro prompt para ' + sel.value + '...';
 
-    const acompanharTokens = (t) => {
+    const acompanharTokens = (t, ui) => {
       status.textContent = `${t.length} caracteres nesta unidade · ${decorrido()}s no total`;
       stream.textContent = t.slice(-900);
       stream.scrollTop = stream.scrollHeight;
+      // com paralelismo > 1 varias unidades escrevem ao mesmo tempo: a caixa
+      // de stream so mostra a mais recente, mas cada etapa ganha seu proprio
+      // contador de caracteres para o progresso continuar visivel em todas
+      if (typeof ui === 'number' && linhasEtapa[ui] && linhasEtapa[ui].estado === 'ativa') {
+        linhasEtapa[ui].info = `${t.length} caracteres · ${decorrido()}s`;
+        pintarEtapas();
+      }
     };
 
     try {
@@ -1275,10 +1299,15 @@ async function viewLab(moduloAlvo) {
           nivel: document.getElementById('f-nivel').value,
           unidades: Number(document.getElementById('f-unidades').value),
           licoes: Number(document.getElementById('f-licoes').value),
+          paralelismo: Number(document.getElementById('f-paralelo').value) || 1,
           signal: controle.signal,
           onEtapa: (i, total, titulo) => {
+            // "descartada" so acontece depois da segunda tentativa (o cliente
+            // ja tenta de novo uma vez sozinho); ate la a etapa continua
+            // "ativa", so a mensagem de status muda
+            const descartada = /descartada/.test(titulo);
             if (linhasEtapa[i]) {
-              linhasEtapa[i].estado = 'falhou';
+              linhasEtapa[i].estado = descartada ? 'falhou' : 'ativa';
               linhasEtapa[i].info = titulo;
             } else {
               linhasEtapa[i] = { texto: `Unidade ${i + 1}/${total} — ${titulo}`, info: 'gerando...', estado: 'ativa' };
@@ -1366,6 +1395,7 @@ async function viewLab(moduloAlvo) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(modulo)
       }).catch(() => {});
+      salvarCopiaEmCursosGerados(modulo);
       MODULOS = await carregarModulos();
       location.hash = '#/modulo/' + modulo.id;
     };
@@ -1396,6 +1426,7 @@ async function viewLab(moduloAlvo) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ moduloId: alvo.id, unidade })
       }).catch(() => {});
+      salvarCopiaEmCursosGerados({ ...alvo, units: [...alvo.units, unidade] });
       MODULOS = await carregarModulos();
       location.hash = '#/modulo/' + alvo.id;
     };

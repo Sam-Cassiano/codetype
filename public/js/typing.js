@@ -62,6 +62,8 @@ export class TypingEngine {
     if (this._input) {
       this._input.removeEventListener('beforeinput', this._onBeforeInput);
       this._input.removeEventListener('input', this._onInput);
+      this._input.removeEventListener('compositionstart', this._onCompositionStart);
+      this._input.removeEventListener('compositionend', this._onCompositionEnd);
       if (this._input.parentNode) this._input.remove();
     }
   }
@@ -149,12 +151,39 @@ export class TypingEngine {
     this._onBeforeInput = (e) => this._handleBeforeInput(e);
     input.addEventListener('beforeinput', this._onBeforeInput);
 
+    // Muitos teclados de celular (Gboard, Samsung Keyboard) tratam digitacao
+    // comum como uma "composicao" do IME, mesmo com autocorrect desligado —
+    // e o beforeinput de insertCompositionText manda o texto ACUMULADO da
+    // composicao a cada tecla, nao so o caractere novo. compositionstart/end
+    // marcam o inicio/fim dessa sessao; _compBase guarda o que ja foi
+    // consumido para so digitar a diferenca (ver _processarComposicao).
+    this._compBase = null;
+    this._ultimoCommitComposicao = 0;
+
+    this._onCompositionStart = () => {
+      this._compBase = '';
+    };
+    this._onCompositionEnd = (e) => {
+      this._processarComposicao(e.data || this._compBase || '');
+      this._compBase = null;
+      this._ultimoCommitComposicao = performance.now();
+      input.value = '';
+    };
+    input.addEventListener('compositionstart', this._onCompositionStart);
+    input.addEventListener('compositionend', this._onCompositionEnd);
+
     // rede de seguranca: se algum teclado ignorar o preventDefault, o texto
-    // que sobrar no campo e consumido aqui e o campo volta a ficar vazio
+    // que sobrar no campo e consumido aqui e o campo volta a ficar vazio.
+    // Isso SEMPRE acontece durante uma composicao (o preventDefault do
+    // beforeinput nao tem efeito nesse caso, por especificacao) — por isso
+    // ignora enquanto ainda esta compondo ou logo depois de um commit, que
+    // ja foi tratado por _processarComposicao/_onCompositionEnd.
     this._onInput = () => {
       const texto = input.value;
       if (!texto) return;
       input.value = '';
+      if (this._compBase !== null) return;
+      if (performance.now() - this._ultimoCommitComposicao < 300) return;
       if (this._recemProcessado()) return;
       for (const ch of texto) this._digitar(ch);
     };
@@ -171,20 +200,70 @@ export class TypingEngine {
   _handleBeforeInput(e) {
     if (this.finalizado) return;
     if (e.cancelable) e.preventDefault();
-    if (this._recemProcessado()) return; // o keydown do desktop ja cuidou
 
     const tipo = e.inputType;
+
+    // composicao do IME: nao depende do guard de 60ms (e um caminho so de
+    // celular, nao colide com o keydown do desktop)
+    if (tipo === 'insertCompositionText') {
+      this._processarComposicao(e.data || '');
+      return;
+    }
+
+    if (this._recemProcessado()) return; // o keydown do desktop ja cuidou
+
     if (tipo === 'deleteContentBackward' || tipo === 'deleteWordBackward') {
+      if (this._compBase !== null) {
+        // apagando dentro de uma composicao ainda ativa: a proxima
+        // insertCompositionText vai refletir o texto encolhido
+        return;
+      }
       this._voltar();
       return;
     }
     if (tipo === 'insertLineBreak' || tipo === 'insertParagraph') {
+      this._finalizarComposicaoPendente();
       this._digitar('\n');
       return;
     }
-    if (tipo === 'insertText' || tipo === 'insertCompositionText' || tipo === 'insertFromPaste') {
+    if (tipo === 'insertText' || tipo === 'insertFromPaste' || tipo === 'insertReplacementText') {
+      if (this._compBase !== null) {
+        // commit de uma composicao chegando como insertText: processa so a
+        // diferenca — o compositionend (se disparar depois) fica um no-op
+        this._processarComposicao(e.data || '');
+        return;
+      }
       for (const ch of e.data || '') this._digitar(ch === '\n' ? '\n' : ch);
     }
+  }
+
+  _finalizarComposicaoPendente() {
+    if (this._compBase === null) return;
+    this._compBase = null;
+    this._ultimoCommitComposicao = performance.now();
+  }
+
+  /**
+   * Processa um evento de composicao do IME. O navegador manda o texto
+   * ACUMULADO da composicao a cada tecla (ex.: 'c', depois 'co', depois
+   * 'con'), entao comparamos com o que ja foi consumido (_compBase) e so
+   * digitamos a diferenca — do contrario cada tecla reprocessaria tudo de
+   * novo, contando erros falsos e duplicando caracteres. Tambem cobre o caso
+   * de autocorrecao reescrever o meio da composicao (ex.: 'teh' -> 'the').
+   */
+  _processarComposicao(atual) {
+    const anterior = this._compBase || '';
+    this._compBase = atual;
+
+    if (atual.startsWith(anterior)) {
+      for (const ch of atual.slice(anterior.length)) this._digitar(ch === '\n' ? '\n' : ch);
+      return;
+    }
+
+    let comuns = 0;
+    while (comuns < anterior.length && comuns < atual.length && anterior[comuns] === atual[comuns]) comuns++;
+    for (let i = anterior.length; i > comuns; i--) this._voltar();
+    for (const ch of atual.slice(comuns)) this._digitar(ch === '\n' ? '\n' : ch);
   }
 
   /** Entrada por toque (barra de simbolos), tratada como digitacao normal. */

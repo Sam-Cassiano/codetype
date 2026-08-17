@@ -88,6 +88,12 @@ Vercel, aberta pelo navegador do telefone.
   celular. O motor escuta `beforeinput` num campo invisível e trata `insertText`,
   `insertLineBreak` e `deleteContentBackward`. No desktop o `keydown` continua sendo o caminho,
   com uma janela de 60 ms que impede o mesmo caractere de contar duas vezes.
+- **Sem erros falsos por causa do teclado preditivo**: teclados como Gboard e Samsung Keyboard
+  tratam digitação comum como uma "composição" do IME (para sugestão/autocorreção), mesmo com
+  autocorreção desligada — e mandam o texto **acumulado** da composição a cada tecla, não só o
+  caractere novo. O motor compara com o que já foi consumido e digita apenas a diferença (e desfaz
+  e redigita quando o teclado reescreve um trecho já composto, como numa autocorreção). Sem isso,
+  cada tecla reprocessava a palavra inteira digitada até ali, contando erros que não existiram.
 - **Barra de símbolos**: acima do teclado aparecem os caracteres não alfanuméricos **da própria
   lição**, ordenados por frequência — justamente os que o teclado virtual esconde numa segunda
   camada. Os toques usam `pointerdown` com `preventDefault` para o campo não perder o foco (senão
@@ -114,9 +120,11 @@ Tudo vale na hora, sem recarregar, e fica salvo no navegador.
 A meta escolhida vale em tudo: nos cartões do mapa, na barra da lição, na aprovação e nas
 estrelas. Colocar 100% faz uma corrida com um único erro reprovar.
 
-**Backup**: exporta o progresso inteiro (XP, lições, estatísticas, badges e ajustes) num `.json`
-e importa de volta — útil porque o progresso vive no `localStorage`, que some se você limpar o
-navegador. Arquivo que não for um backup do CodeType é recusado sem tocar no que já existe.
+**Backup do progresso**: exporta o progresso inteiro (XP, lições, estatísticas, badges e ajustes)
+num `.json` e importa de volta — útil porque o progresso vive no `localStorage`, que some se você
+limpar o navegador. Arquivo que não for um backup do CodeType é recusado sem tocar no que já
+existe. (Isso é o progresso; para levar um **módulo gerado** para outro aparelho, veja
+"Levando um módulo gerado para o celular e para o deploy", mais abaixo.)
 
 ---
 
@@ -143,19 +151,52 @@ A tela `#/lab` tem duas abas.
 
 ### Módulo novo
 
-Você escolhe modelo, linguagem, foco, nível e o tamanho do módulo.
+Você escolhe modelo, linguagem, foco, nível e o tamanho do módulo — **sem limite** de unidades,
+lições por unidade ou unidades em paralelo: os campos aceitam qualquer valor, quem decide o
+tamanho é você, não uma trava arbitrária no código.
 
-A geração acontece **uma unidade por requisição**, seguindo um esqueleto fixo de progressão
-(símbolos → tipos → fluxo → loops → funções → estruturas de dados → organização → erros →
-código real). O modelo preenche o conteúdo, não a estrutura — isso mantém a qualidade
-pedagógica mesmo com modelos pequenos e permite:
+A geração segue um esqueleto fixo de progressão para as primeiras unidades (símbolos → tipos →
+fluxo → loops → funções → estruturas de dados → organização → erros → código real), seguido por
+um segundo bloco de temas mais avançados (padrões de projeto, testes automatizados, concorrência,
+tratamento avançado de erros, bibliotecas comuns, performance, arquitetura, refatoração,
+ferramentas, segurança). Se você pedir mais unidades do que a soma desses dois blocos, o gerador
+volta a ciclar pelos temas avançados marcando "aprofundamento" — a variedade real vem do
+dedup por código e da instrução anti-repetição do modelo, não de um catálogo infinito de temas.
 
-- ver o currículo crescendo unidade a unidade em vez de esperar uma resposta gigante;
+**Cada unidade, por sua vez, é pedida em blocos de até 6 lições por requisição** (em vez de uma
+única requisição gigante), independente de quantas lições você pediu no total: uma unidade de 20
+lições vira ~4 requisições menores em sequência, cada uma sabendo quais lições já foram geradas
+para não repetir. Isso é o que permite remover o limite de lições sem sobrecarregar o Ollama com
+uma resposta enorme de uma vez — o tamanho de cada bloco é fixo, só a quantidade de blocos cresce.
+Pelo mesmo motivo o `num_predict` (tamanho máximo da resposta) não tem mais teto artificial: quem
+protege contra uma geração travada é o watchdog de inatividade (cliente e servidor), não um corte
+de tokens.
+
+Isso tudo permite:
+
+- ver o currículo crescendo unidade a unidade (e lição a lição, dentro da unidade) em vez de
+  esperar uma resposta gigante;
 - cancelar no meio sem perder o que já ficou pronto;
-- descartar uma unidade malformada sem derrubar o módulo inteiro.
+- descartar uma unidade malformada sem derrubar o módulo inteiro;
+- pedir módulos grandes sem que uma única requisição fique grande demais para o hardware.
+
+**Unidades em paralelo** só acelera de verdade se o Ollama aceitar mais de uma requisição por vez
+(`OLLAMA_NUM_PARALLEL`) ou você tiver GPU sobrando — em CPU com um único modelo carregado, as
+requisições costumam enfileirar do mesmo jeito do lado do Ollama, então o padrão continua sendo 1
+(sequencial, como sempre foi). Como o campo não tem mais teto, é você quem decide até onde vale a
+pena subir esse número para a sua máquina.
 
 A saída é forçada por **JSON Schema** (`format` do Ollama), e o `think` é desligado para modelos
 que suportam raciocínio, com retry automático caso o modelo não aceite o parâmetro.
+
+**Robustez**: uma unidade que falhar (JSON malformado, erro do modelo) ganha uma segunda
+tentativa automática antes de ser descartada — a tela mostra "tentando de novo" em vez de
+descartar na primeira falha. Se o Ollama parar de responder no meio de uma unidade (trava,
+processo caído), tanto o navegador quanto o servidor desistem sozinhos depois de alguns minutos
+sem nenhum dado novo, em vez de ficar girando para sempre, com uma mensagem de erro clara. O
+modelo também recebe instrução para variar nomes e cenários entre lições, e uma lição cujo
+código sair praticamente idêntico ao de outra já aceita no mesmo módulo (ou já existente, ao
+acrescentar uma unidade) é descartada automaticamente.
 
 ### Acrescentar unidade a um módulo existente
 
@@ -181,19 +222,26 @@ de uma geração posterior — e o progresso salvo continua válido.
 
 ### Levando um módulo gerado para o celular e para o deploy
 
-Um módulo gerado nasce só no `localStorage` de quem gerou. Há três caminhos para ele sair dali,
-todos na página do módulo:
+Um módulo gerado nasce só no `localStorage` de quem gerou.
+
+**Toda vez que você gera um módulo novo, publica um módulo ou acrescenta uma unidade, o CodeType
+já salva sozinho uma cópia em `Cursos Gerados/<id>.json`, na raiz do projeto** — sem precisar
+clicar em nada. É um backup legível e versionado no git, independente do `localStorage` e de o
+módulo estar publicado ou não; sobrevive até se você excluir o módulo do app. Isso só funciona
+rodando pelo código-fonte (`node server.js`), porque grava dentro da pasta do projeto — no
+executável essa pasta está embutida e é somente leitura, e nesse caso o salvamento simplesmente
+não acontece, sem avisar nada (não é um erro, é o modo de uso esperado do `.exe`). O app não
+carrega módulos de lá de volta: é puramente uma trilha do que foi gerado.
+
+Além disso, na página do módulo:
 
 | Botão | O que faz | Serve para |
 |-------|-----------|-----------|
 | **Publicar no app** | grava o módulo em `public/curriculum/gerados.json` | commitar e o módulo passa a viajar no deploy — aparece na Vercel e no celular de qualquer pessoa, sem API e sem `localStorage` |
-| **Exportar .json** | baixa o módulo como arquivo | mandar para outro aparelho |
-| **Importar módulo** (na home) | lê o `.json` | receber no celular ou em outra máquina |
+| **Exportar .json** | baixa o módulo como arquivo | guardar fora do projeto ou mandar manualmente para outro aparelho |
 
-*Publicar* só funciona rodando pelo código-fonte (`node server.js`), porque grava dentro de
-`public/`; no executável o `public/` está embutido e é somente leitura — nesse caso o app avisa e
-o caminho é exportar/importar. Módulos publicados aparecem com o selo **publicado no app** e são
-carregados de um arquivo estático, então vencem a cópia local em caso de conflito de id.
+Módulos publicados aparecem com o selo **publicado no app** e são carregados de um arquivo
+estático, então vencem a cópia local em caso de conflito de id.
 
 ### Enviando ao GitHub sem sair do app
 
@@ -207,8 +255,9 @@ só esperar o deploy automático da Vercel.
 
 Detalhes que importam:
 
-- o `git add` é **restrito a `public/curriculum/gerados.json`**. Nunca é `git add -A`, então
-  trabalho em andamento em outros arquivos não é arrastado para o commit sem querer;
+- o `git add` é **restrito a `public/curriculum/gerados.json` e à pasta `Cursos Gerados/`**.
+  Nunca é `git add -A`, então trabalho em andamento em outros arquivos não é arrastado para o
+  commit sem querer;
 - a mensagem sai como `modulos gerados: <nomes dos módulos publicados>`;
 - o git roda com `GIT_TERMINAL_PROMPT=0`. Se faltar credencial, o push **falha na hora** com a
   mensagem em vez de travar o servidor esperando uma senha que ninguém vai digitar. O commit já
@@ -224,6 +273,28 @@ Se preferir escrever em vez de gerar, adicione o objeto direto no array `units` 
 `public/curriculum/kotlin-android.js` (formato no fim deste arquivo) e recarregue a página —
 não há build. Nesse caso, `npm run build:exe` de novo se você usa o executável.
 
+### Modelo recomendado: Qwen2.5-Coder
+
+A tela `#/lab` reconhece automaticamente qualquer modelo instalado cujo nome contenha
+`qwen2.5-coder` ou `qwen3-coder`, marca ele como **"recomendado p/ código"** na lista e o
+pré-seleciona (se você ainda não tiver escolhido um modelo manualmente). Se nenhum estiver
+instalado, a tela mostra uma dica com o comando de instalação.
+
+O Qwen2.5-Coder é especializado em geração de código (treinado especificamente para isso, ao
+contrário de modelos generalistas como o Gemma) e tem boa relação qualidade/velocidade em CPU.
+Para instalar:
+
+```bash
+ollama pull qwen2.5-coder:7b    # maquinas mais simples / so CPU
+ollama pull qwen2.5-coder:14b   # se sua maquina ja aguenta modelos de ~12b-14b
+```
+
+Use o `:14b` se a sua máquina já roda bem modelos na faixa de 12b (como o `gemma4:12b` testado
+abaixo); caso contrário, o `:7b` é bem mais rápido em CPU sem perder muito em qualidade de código.
+Existe também o Qwen3-Coder mais recente, mas as variantes disponíveis hoje pedem bem mais VRAM
+(ou são otimizadas para Apple Silicon), então para uma máquina comum com Ollama em CPU o
+Qwen2.5-Coder continua sendo a escolha mais prática.
+
 Modelos testados nesta máquina:
 
 | Modelo | Observação |
@@ -232,7 +303,7 @@ Modelos testados nesta máquina:
 | `hf.co/empero-ai/Qwythos-9B-Claude-Mythos-5-1M-GGUF:Q8_0` | disponível na lista; contexto de 1M |
 
 > Em CPU a geração é lenta por natureza. Comece com 2–3 unidades × 3 lições para sentir o ritmo
-> da sua máquina.
+> da sua máquina, mesmo sem limite artificial — nada te impede de pedir mais depois.
 
 ---
 
@@ -324,6 +395,7 @@ public/
     index.js                  registro e carregamento dos módulos
     kotlin-android.js         o módulo Kotlin/Android
 data/modules.json             módulos gerados (criado no primeiro salvamento)
+Cursos Gerados/                backup versionado de módulos gerados (salvo automaticamente)
 ```
 
 ## Adicionando um módulo à mão

@@ -21,6 +21,17 @@ const PORT_INICIAL = Number(process.env.PORT || 5173);
 const OLLAMA = process.env.OLLAMA_HOST || 'http://127.0.0.1:11434';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
+// tempo maximo sem NENHUM dado novo vindo do Ollama antes de desistir do
+// proxy. Sem isso, um modelo travado (ou o processo do Ollama caido no meio)
+// prende a requisicao para sempre e o gerador da tela /lab fica girando.
+const OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS || 180000);
+
+// pasta na raiz do projeto (versionada no git) onde "Salvar em Cursos
+// Gerados" grava uma copia de cada modulo gerado — um backup legivel e
+// independente do localStorage e de public/curriculum/gerados.json.
+const CURSOS_GERADOS_REL = 'Cursos Gerados';
+const CURSOS_GERADOS_DIR = path.join(__dirname, CURSOS_GERADOS_REL);
+
 // no executavel, os dados ficam ao lado do .exe (o bundle e somente leitura)
 const RAIZ_DADOS = EMPACOTADO ? path.dirname(process.execPath) : __dirname;
 const DATA_DIR = path.join(RAIZ_DADOS, 'data');
@@ -92,12 +103,23 @@ function ollamaProxy(req, res, upstreamPath) {
     up.pipe(res);
   });
 
+  // setTimeout aqui e um timeout de INATIVIDADE do socket: cada pedaco de
+  // dado recebido reinicia a contagem, entao um streaming lento (normal em
+  // CPU) nao aciona isso — so uma trava de verdade aciona.
+  let travouPorInatividade = false;
+  proxied.setTimeout(OLLAMA_TIMEOUT_MS, () => {
+    travouPorInatividade = true;
+    proxied.destroy(new Error('tempo esgotado esperando o Ollama'));
+  });
+
   proxied.on('error', (err) => {
     if (!res.headersSent) {
-      json(res, 502, {
-        error: 'ollama_indisponivel',
+      json(res, travouPorInatividade ? 504 : 502, {
+        error: travouPorInatividade ? 'ollama_travado' : 'ollama_indisponivel',
         detail: err.message,
-        hint: 'O Ollama esta rodando? Teste: ollama list'
+        hint: travouPorInatividade
+          ? `sem resposta do Ollama por ${Math.round(OLLAMA_TIMEOUT_MS / 1000)}s — o modelo pode ter travado. Tente de novo ou reinicie o Ollama.`
+          : 'O Ollama esta rodando? Teste: ollama list'
       });
     } else {
       res.end();
@@ -133,6 +155,9 @@ const saveExtensoes = (mapa) => gravarJSON(EXTENSOES_FILE, mapa);
 /* ------------------------------------ Git ---------------------------------- */
 
 const ARQUIVO_GERADOS = path.join('public', 'curriculum', 'gerados.json');
+// caminhos que o painel "Enviar ao GitHub" acompanha e commita: o arquivo
+// publicado (o que realmente afeta o app) e a pasta de backups legiveis.
+const CAMINHOS_GIT = [ARQUIVO_GERADOS, CURSOS_GERADOS_REL];
 
 /**
  * Roda um comando git no projeto. GIT_TERMINAL_PROMPT=0 e essencial: sem isso
@@ -162,7 +187,7 @@ async function estadoDoGit() {
   if (!dentro.ok) return { repo: false };
 
   const [modificado, branch, upstream, remoto] = await Promise.all([
-    git(['status', '--porcelain', '--', ARQUIVO_GERADOS]),
+    git(['status', '--porcelain', '--', ...CAMINHOS_GIT]),
     git(['rev-parse', '--abbrev-ref', 'HEAD']),
     git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']),
     git(['remote', 'get-url', 'origin'])
@@ -196,10 +221,10 @@ async function enviarModulos(mensagem) {
     return { ok: false, passos: [{ titulo: 'git', ok: false, saida: 'a pasta do projeto nao e um repositorio git' }] };
   }
 
-  registrar('git add', await git(['add', '--', ARQUIVO_GERADOS]));
+  registrar('git add', await git(['add', '--', ...CAMINHOS_GIT]));
 
   const staged = await git(['diff', '--cached', '--name-only']);
-  if (staged.saida.includes('gerados.json')) {
+  if (staged.saida.trim().length) {
     const commit = registrar('git commit', await git(['commit', '-m', mensagem]));
     if (!commit.ok) return { ok: false, passos, estado: await estadoDoGit() };
   } else {
@@ -308,6 +333,25 @@ const server = http.createServer(async (req, res) => {
       const lista = lerJSON(arquivo, []).filter((m) => m.id !== id);
       fs.writeFileSync(arquivo, JSON.stringify(lista, null, 2), 'utf8');
       return json(res, 200, { ok: true, modulos: lista.length });
+    }
+
+    // "Salvar em Cursos Gerados": grava uma copia legivel do modulo em
+    // Cursos Gerados/<id>.json, na raiz do projeto. E so um backup versionado
+    // no git — nao afeta o que o app carrega (isso e o /api/publish acima).
+    if (url === '/api/cursos-gerados' && req.method === 'POST') {
+      if (EMPACOTADO) {
+        return json(res, 501, {
+          error: 'somente_no_codigo_fonte',
+          hint: `Salvar em ${CURSOS_GERADOS_REL} grava dentro da pasta do projeto. Rode com "node server.js" no projeto para usar isso.`
+        });
+      }
+      const mod = JSON.parse(await readBody(req));
+      if (!mod || !mod.id) return json(res, 400, { error: 'modulo invalido' });
+
+      fs.mkdirSync(CURSOS_GERADOS_DIR, { recursive: true });
+      const arquivo = path.join(CURSOS_GERADOS_DIR, `${mod.id}.json`);
+      fs.writeFileSync(arquivo, JSON.stringify(mod, null, 2), 'utf8');
+      return json(res, 200, { ok: true, arquivo: path.relative(__dirname, arquivo) });
     }
 
     if (url === '/api/git/status' && req.method === 'GET') {

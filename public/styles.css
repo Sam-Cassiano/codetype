@@ -482,36 +482,51 @@ input[type="range"] { accent-color: var(--acc); width: 130px; }
 .preview-lista ul { padding-left: 16px; margin: 4px 0 10px; }
 .preview-lista b { color: var(--txt); }
 
-/* --------------------------- barra de toque ------------------------------- */
+/* ----------------------------- teclado proprio ----------------------------- */
 
-/* so aparece onde faz sentido: tela estreita ou ponteiro grosso (dedo) */
-.teclas-rapidas { display: none; }
+/* so existe onde faz sentido: tela estreita ou ponteiro grosso (dedo) — nesse
+   caso ele substitui o teclado nativo do sistema por inteiro (ver keyboard.js
+   e o inputmode="none" no campo fantasma do TypingEngine) */
+#teclado-proprio-slot { display: none; }
 
 @media (max-width: 860px), (pointer: coarse) {
-  .teclas-rapidas {
-    display: flex; flex-wrap: wrap; gap: 6px;
-    margin-top: 10px; padding: 10px;
-    background: var(--bg-2); border: 1px solid var(--linha); border-radius: 12px;
-  }
+  #teclado-proprio-slot { display: block; }
 }
 
-.tecla, .tecla-toque {
-  font-family: var(--mono); font-size: 16px;
-  min-width: 42px; height: 42px; padding: 0 10px;
+body.teclado-aberto .licao-cab, body.teclado-aberto .explicacao,
+body.teclado-aberto .enunciado, body.teclado-aberto .licao-rodape-acoes { display: none; }
+
+.teclado-proprio {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-top: 10px; padding: 8px;
+  background: var(--bg-2); border: 1px solid var(--linha); border-radius: 12px;
+}
+
+.tp-faixa {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
+  border-bottom: 1px solid var(--linha);
+}
+.tp-faixa[hidden] { display: none; }
+
+.tp-corpo { display: flex; flex-direction: column; gap: 6px; }
+.tp-linha { display: flex; gap: 5px; justify-content: center; }
+
+.tp-tecla {
+  font-family: var(--mono); font-size: 16px; flex: 1;
+  min-width: 0; height: 42px; padding: 0 4px;
   background: var(--bg-3); color: var(--txt);
   border: 1px solid var(--linha); border-radius: 8px;
   cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
-.tecla:active { background: var(--acc-soft); border-color: var(--acc); transform: translateY(1px); }
-.tecla.larga { min-width: 58px; font-size: 18px; }
-.tecla-toque {
-  font-family: var(--sans); font-size: 13px; flex: 1; min-width: 140px;
-  background: var(--acc-soft); border-color: var(--acc); color: var(--txt);
-}
-body.teclado-aberto .tecla-toque { display: none; }
-body.teclado-aberto .licao-cab, body.teclado-aberto .explicacao,
-body.teclado-aberto .enunciado, body.teclado-aberto .licao-rodape-acoes { display: none; }
-body.teclado-aberto .teclas-rapidas { position: sticky; bottom: 8px; z-index: 5; }
+.tp-tecla:active { background: var(--acc-soft); border-color: var(--acc); transform: translateY(1px); }
+
+.tp-prioritario { flex: 0 0 auto; min-width: 38px; background: var(--acc-soft); border-color: var(--acc); }
+
+.tp-shift, .tp-pagina, .tp-enter, .tp-back { flex: 0 0 auto; min-width: 52px; font-size: 14px; }
+.tp-shift.ativo { background: var(--acc-soft); border-color: var(--acc); color: var(--acc); }
+.tp-shift.travado { background: var(--acc); border-color: var(--acc); color: var(--bg); }
+.tp-espaco { flex: 4; }
+.tp-enter { background: var(--acc-soft); border-color: var(--acc); }
 
 /* ------------------------------ responsivo -------------------------------- */
 

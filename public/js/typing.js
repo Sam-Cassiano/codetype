@@ -139,6 +139,14 @@ export class TypingEngine {
     input.setAttribute('autocorrect', 'off');
     input.setAttribute('autocomplete', 'off');
     input.setAttribute('enterkeyhint', 'enter');
+    // pede pro navegador nao abrir o teclado nativo ao focar este campo — no
+    // celular quem digita e o teclado proprio do app (ver keyboard.js). Se
+    // algum navegador ignorar essa dica (aconteceu historicamente em versoes
+    // antigas do iOS Safari) o pior caso e o teclado nativo aparecer TAMBEM:
+    // a digitacao continua correta porque o tratamento de composicao do IME
+    // (compositionstart/end + beforeinput) abaixo continua ativo como rede de
+    // seguranca, exatamente como antes desta tela ter um teclado proprio.
+    input.setAttribute('inputmode', 'none');
     input.spellcheck = false;
     this.container.appendChild(input);
     this._input = input;

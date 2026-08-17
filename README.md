@@ -80,27 +80,36 @@ Atalhos: `Esc` reinicia o trecho · `Enter` na tela de resultado vai para a pró
 
 ## No celular
 
-O treino funciona em telas pequenas e com teclado virtual — inclusive na versão publicada na
-Vercel, aberta pelo navegador do telefone.
+O treino funciona em telas pequenas — inclusive na versão publicada na Vercel, aberta pelo
+navegador do telefone. Em tela estreita ou com ponteiro grosso (dedo), o **teclado nativo do
+sistema nunca aparece durante o treino**: quem digita é um teclado próprio do app
+(`public/js/keyboard.js`), desenhado para código.
 
-- **Entrada por `beforeinput`**: o teclado do Android manda `keydown` com `key: "Unidentified"`
-  (keyCode 229) em vez do caractere, então digitar via `keydown` simplesmente não funciona no
-  celular. O motor escuta `beforeinput` num campo invisível e trata `insertText`,
-  `insertLineBreak` e `deleteContentBackward`. No desktop o `keydown` continua sendo o caminho,
-  com uma janela de 60 ms que impede o mesmo caractere de contar duas vezes.
-- **Sem erros falsos por causa do teclado preditivo**: teclados como Gboard e Samsung Keyboard
-  tratam digitação comum como uma "composição" do IME (para sugestão/autocorreção), mesmo com
-  autocorreção desligada — e mandam o texto **acumulado** da composição a cada tecla, não só o
-  caractere novo. O motor compara com o que já foi consumido e digita apenas a diferença (e desfaz
-  e redigita quando o teclado reescreve um trecho já composto, como numa autocorreção). Sem isso,
-  cada tecla reprocessava a palavra inteira digitada até ali, contando erros que não existiram.
-- **Barra de símbolos**: acima do teclado aparecem os caracteres não alfanuméricos **da própria
-  lição**, ordenados por frequência — justamente os que o teclado virtual esconde numa segunda
-  camada. Os toques usam `pointerdown` com `preventDefault` para o campo não perder o foco (senão
-  o teclado fecharia a cada símbolo). Tem também `⏎` e `⌫`.
-- **Teclado aberto**: o teclado virtual não redimensiona a janela, encolhe a `visualViewport`. O
-  app detecta isso, recolhe cabeçalho e explicação, limita a altura do editor ao espaço que sobra
-  e mantém o cursor no centro.
+- **Como o teclado nativo é evitado**: o campo invisível que o `TypingEngine` usa para capturar
+  teclado físico/bluetooth pede `inputmode="none"` — um sinal padrão do HTML pra o navegador não
+  abrir o teclado virtual do sistema ao focar o campo. Quem digita de fato é o teclado próprio,
+  cujos botões chamam `engine.digitar(ch)` / `engine.apagar()` direto, sem depender de foco em
+  nenhum input — por isso funciona mesmo que algum navegador ignore a dica de `inputmode` (já
+  aconteceu em versões antigas do iOS Safari): nesse caso pior o teclado nativo aparece **também**,
+  mas a digitação continua correta porque o tratamento de composição do IME (ver abaixo) continua
+  ativo como rede de segurança.
+- **Teclado próprio pensado para código**: layout com dígitos sempre visíveis, letras em QWERTY
+  com `⇧` (toque alterna maiúscula única → travada → solta), uma segunda página `123`/`ABC` com os
+  símbolos mais comuns em programação (`{ } [ ] ( ) ; : = " ' < > / \ | & % # @ ! ? - + * _ ~`), e
+  uma faixa no topo com os símbolos que **a própria lição usa**, ordenados por frequência — os que
+  mais valem estar a um toque só, em qualquer página. Sempre visíveis: espaço, `,`, `.`, `⏎`
+  (quebra de linha) e `⌫` (apagar, com repetição ao segurar).
+- **Sem erros falsos por causa do teclado preditivo**: como camada extra de segurança (para o caso
+  raro do teclado nativo aparecer apesar do `inputmode="none"`), o motor ainda trata corretamente
+  teclados como Gboard e Samsung Keyboard, que tratam digitação comum como uma "composição" do IME
+  mesmo com autocorreção desligada — e mandam o texto **acumulado** da composição a cada tecla, não
+  só o caractere novo. O motor compara com o que já foi consumido e digita apenas a diferença (e
+  desfaz e redigita quando o teclado reescreve um trecho já composto, como numa autocorreção).
+- **Teclado sempre visível, sem pulos de layout**: como não é mais um popup do sistema que aparece
+  e some, o app entra direto no "modo compacto" em telas de celular — recolhe cabeçalho e
+  explicação e prende o teclado próprio no rodapé — em vez de depender de detectar a
+  `visualViewport` encolhendo. A altura do editor é recalculada com base na altura real do teclado
+  próprio, então o cursor atual sempre fica visível sem precisar rolar a tela por baixo dele.
 - Layout responsivo: navegação rolável, uma coluna nos mapas e painéis, alvos de toque de 42 px.
 
 ## Configurações (`#/config`)
@@ -388,6 +397,7 @@ public/
   js/
     app.js                    roteador por hash e todas as telas
     typing.js                 motor de digitação (comparação, modos, métricas)
+    keyboard.js               teclado próprio do celular (substitui o teclado nativo do sistema)
     highlight.js              realce de sintaxe por caractere (kotlin, java, js, python, sql, xml)
     store.js                  progresso, XP, badges, streak, estatísticas
     ollama.js                 cliente do Ollama (streaming + JSON Schema)

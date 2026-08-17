@@ -7,11 +7,22 @@ import { languageLabel } from './highlight.js';
 import * as store from './store.js';
 import { carregarModulos, encontrarLicao, proximaLicao, todasLicoes } from '../curriculum/index.js';
 import { listarModelos, gerarModulo, gerarUnidade, gerarReforco, temasDisponiveis } from './ollama.js';
+import { montarTecladoProprio } from './keyboard.js';
 
 const app = document.getElementById('app');
 let MODULOS = [];
 let engineAtual = null;
+let tecladoProprioAtual = null;
 let licoesTemporarias = {}; // licoes de reforco geradas na sessao
+
+/**
+ * Mesmo criterio ja usado no CSS pra decidir quando a tela e "de celular":
+ * tela estreita ou ponteiro grosso (dedo). E nesses casos que o teclado
+ * proprio substitui o teclado nativo do sistema.
+ */
+function ehMobile() {
+  return window.matchMedia('(max-width: 860px), (pointer: coarse)').matches;
+}
 
 /* ------------------------------- utilitarios ------------------------------ */
 
@@ -32,24 +43,6 @@ function statusLicao(modulo, ui, li) {
   if (p && p.passou) return 'concluida';
   if (store.licaoLiberada(modulo, ui, li)) return 'liberada';
   return 'bloqueada';
-}
-
-/**
- * Simbolos que a barra de toque oferece: os proprios caracteres nao
- * alfanumericos do trecho, ordenados por frequencia. Assim a barra e sempre
- * relevante para a licao aberta — em celular, sao justamente os que o teclado
- * virtual esconde em outra camada.
- */
-function simbolosDe(codigo, limite = 14) {
-  const contagem = new Map();
-  for (const ch of String(codigo)) {
-    if (/[A-Za-z0-9\s]/.test(ch)) continue;
-    contagem.set(ch, (contagem.get(ch) || 0) + 1);
-  }
-  return [...contagem.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limite)
-    .map(([ch]) => ch);
 }
 
 function estrelas(p, licao) {
@@ -446,14 +439,7 @@ function viewLicao(moduloId, licaoId) {
       <div class="editor ${ehDesafio ? 'coberto' : ''}" id="editor" tabindex="0"></div>
       ${ehDesafio ? '<button class="btn fantasma revelar" id="btn-revelar">Revelar a solucao para digitar</button>' : ''}
 
-      <div class="teclas-rapidas" id="teclas-rapidas">
-        <button class="tecla-toque" data-foco="1">Tocar para digitar</button>
-        ${simbolosDe(licao.code)
-          .map((sim) => `<button class="tecla" data-ch="${esc(sim)}">${esc(sim)}</button>`)
-          .join('')}
-        <button class="tecla larga" data-ch="\\n">&#9166;</button>
-        <button class="tecla larga" data-apagar="1">&#9003;</button>
-      </div>
+      <div id="teclado-proprio-slot"></div>
 
       <footer class="licao-rodape-acoes">
         <button class="btn fantasma" id="btn-reiniciar">Reiniciar (Esc)</button>
@@ -516,24 +502,18 @@ function viewLicao(moduloId, licaoId) {
     };
   }
 
-  // Barra de toque: pointerdown com preventDefault mantem o foco no campo
-  // invisivel, senao o teclado virtual fecharia a cada simbolo digitado.
-  document.getElementById('teclas-rapidas').addEventListener('pointerdown', (e) => {
-    const alvo = e.target.closest('button');
-    if (!alvo) return;
-    e.preventDefault();
-    if (alvo.dataset.foco) {
-      engineAtual.focus();
-      return;
-    }
-    if (alvo.dataset.apagar) {
-      engineAtual.apagar();
-      return;
-    }
-    const ch = alvo.dataset.ch === '\\n' ? '\n' : alvo.dataset.ch;
-    engineAtual.digitar(ch);
-    engineAtual.focus();
-  });
+  // No celular, o teclado nativo do sistema nunca entra em cena (o campo
+  // fantasma do TypingEngine pede inputmode="none"): quem digita e o teclado
+  // proprio do app, montado abaixo, chamando digitar()/apagar() direto — o
+  // que funciona independente de foco em qualquer input.
+  if (ehMobile()) {
+    tecladoProprioAtual = montarTecladoProprio({
+      container: document.getElementById('teclado-proprio-slot'),
+      codigo: licao.code,
+      onChar: (ch) => engineAtual.digitar(ch),
+      onApagar: () => engineAtual.apagar()
+    });
+  }
 
   ajustarParaTecladoVirtual();
 
@@ -549,27 +529,38 @@ function viewLicao(moduloId, licaoId) {
 }
 
 /**
- * O teclado virtual nao redimensiona a janela: ele encolhe a visualViewport.
- * Sem isso o editor fica escondido atras do teclado no celular.
+ * No celular o teclado proprio fica sempre visivel, fixo no rodape — nao e
+ * mais algo que aparece e some como o teclado nativo do sistema fazia
+ * (aquele encolhia a visualViewport; este e um elemento normal da pagina).
+ * Por isso o "modo compacto" (esconde cabecalho/explicacao, teclado fixo no
+ * rodape) agora depende so de ser celular, nao de detectar teclado aberto —
+ * e o calculo de altura do editor usa a visualViewport (que ainda reflete a
+ * barra de endereco/teclado do navegador) so pra sobrar espaco de verdade.
  */
 function ajustarParaTecladoVirtual() {
+  const mobile = ehMobile();
+  document.body.classList.toggle('teclado-aberto', mobile);
+  if (!mobile) return;
+
   const vv = window.visualViewport;
-  if (!vv) return;
 
   const aplicar = () => {
     const editor = document.getElementById('editor');
+    const slot = document.getElementById('teclado-proprio-slot');
     if (!editor) return;
-    const tecladoAberto = window.innerHeight - vv.height > 120;
-    document.body.classList.toggle('teclado-aberto', tecladoAberto);
-    // sobra para o editor: viewport visivel menos o cabecalho da licao
-    const disponivel = Math.max(140, vv.height - editor.getBoundingClientRect().top - 120);
-    editor.style.maxHeight = tecladoAberto ? disponivel + 'px' : '';
-    if (tecladoAberto) {
-      const atual = editor.querySelector('.ch.atual');
-      if (atual) atual.scrollIntoView({ block: 'center', behavior: 'auto' });
-    }
+    const alturaViewport = vv ? vv.height : window.innerHeight;
+    const alturaTeclado = slot ? slot.getBoundingClientRect().height : 0;
+    // sobra para o editor: viewport visivel menos o cabecalho da licao e o
+    // espaco que o teclado proprio ocupa (medido de verdade, nao chutado —
+    // o teclado flui normal no documento, logo abaixo do editor)
+    const disponivel = Math.max(140, alturaViewport - editor.getBoundingClientRect().top - alturaTeclado - 16);
+    editor.style.maxHeight = disponivel + 'px';
+    const atual = editor.querySelector('.ch.atual');
+    if (atual) atual.scrollIntoView({ block: 'center', behavior: 'auto' });
   };
 
+  aplicar();
+  if (!vv) return;
   if (app._vvHandler) {
     vv.removeEventListener('resize', app._vvHandler);
     vv.removeEventListener('scroll', app._vvHandler);
@@ -577,7 +568,6 @@ function ajustarParaTecladoVirtual() {
   app._vvHandler = aplicar;
   vv.addEventListener('resize', aplicar);
   vv.addEventListener('scroll', aplicar);
-  aplicar();
 }
 
 function finalizarLicao(modulo, licao, m) {
@@ -1440,6 +1430,10 @@ function limpar() {
     engineAtual.destroy();
     engineAtual = null;
   }
+  if (tecladoProprioAtual) {
+    tecladoProprioAtual.destroy();
+    tecladoProprioAtual = null;
+  }
   if (app._onEsc) {
     document.removeEventListener('keydown', app._onEsc);
     app._onEsc = null;
@@ -1451,8 +1445,8 @@ function limpar() {
     window.visualViewport.removeEventListener('resize', app._vvHandler);
     window.visualViewport.removeEventListener('scroll', app._vvHandler);
     app._vvHandler = null;
-    document.body.classList.remove('teclado-aberto');
   }
+  document.body.classList.remove('teclado-aberto');
 }
 
 function rotear() {
